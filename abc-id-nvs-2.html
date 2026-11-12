@@ -1,0 +1,2156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PM SHRI JNV ID Card Studio Pro &amp; Verification Suite</title>
+
+  <!-- Core Export & QR Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@700;900&family=Great+Vibes&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS & 4 INSTITUTIONAL THEMES (Royal, Emerald, Crimson, Gold)
+       ========================================================================== */
+    :root {
+      --primary: #0b3d91;
+      --primary-dark: #051c47;
+      --primary-mid: #174ea6;
+      --accent: #00695c;
+      --gold: #c59b27;
+      --gold-light: #fef08a;
+      --field-red: #b91c1c;
+      --bg-page: radial-gradient(circle at 15% 15%, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%);
+      --card-grad: radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.98) 0%, rgba(235, 244, 255, 0.95) 45%, rgba(200, 225, 255, 0.98) 100%);
+      --pattern-stroke: rgba(11, 61, 145, 0.12);
+      --pattern-accent: rgba(197, 155, 39, 0.25);
+      --wave-fill-1: rgba(11, 61, 145, 0.08);
+      --wave-fill-2: rgba(0, 105, 92, 0.08);
+    }
+
+    body.theme-emerald {
+      --primary: #065f46;
+      --primary-dark: #022c22;
+      --primary-mid: #047857;
+      --accent: #0f766e;
+      --gold: #b45309;
+      --bg-page: radial-gradient(circle at 15% 15%, #d1fae5 0%, #a7f3d0 50%, #6ee7b7 100%);
+      --card-grad: radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.98) 0%, rgba(225, 249, 238, 0.95) 45%, rgba(185, 238, 215, 0.98) 100%);
+      --pattern-stroke: rgba(6, 95, 70, 0.12);
+      --pattern-accent: rgba(180, 83, 9, 0.22);
+      --wave-fill-1: rgba(6, 95, 70, 0.08);
+      --wave-fill-2: rgba(180, 83, 9, 0.08);
+    }
+
+    body.theme-crimson {
+      --primary: #881337;
+      --primary-dark: #4c0519;
+      --primary-mid: #9f1239;
+      --accent: #9a3412;
+      --gold: #b45309;
+      --field-red: #991b1b;
+      --bg-page: radial-gradient(circle at 15% 15%, #ffe4e6 0%, #fecdd3 50%, #fda4af 100%);
+      --card-grad: radial-gradient(circle at 85% 15%, rgba(255, 253, 250, 0.98) 0%, rgba(255, 235, 238, 0.95) 45%, rgba(253, 210, 218, 0.98) 100%);
+      --pattern-stroke: rgba(136, 19, 55, 0.12);
+      --pattern-accent: rgba(180, 83, 9, 0.22);
+      --wave-fill-1: rgba(136, 19, 55, 0.08);
+      --wave-fill-2: rgba(180, 83, 9, 0.08);
+    }
+
+    body.theme-gold {
+      --primary: #78350f;
+      --primary-dark: #451a03;
+      --primary-mid: #92400e;
+      --accent: #b45309;
+      --gold: #d97706;
+      --field-red: #991b1b;
+      --bg-page: radial-gradient(circle at 15% 15%, #fef3c7 0%, #fde68a 50%, #fcd34d 100%);
+      --card-grad: radial-gradient(circle at 85% 15%, rgba(255, 253, 245, 0.98) 0%, rgba(254, 243, 199, 0.95) 45%, rgba(253, 230, 138, 0.98) 100%);
+      --pattern-stroke: rgba(120, 53, 15, 0.12);
+      --pattern-accent: rgba(217, 119, 6, 0.25);
+      --wave-fill-1: rgba(120, 53, 15, 0.08);
+      --wave-fill-2: rgba(217, 119, 6, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', Roboto, sans-serif;
+      background: var(--bg-page);
+      color: #1e293b;
+      min-height: 100vh;
+      padding: 20px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background 0.3s ease;
+    }
+
+    /* HEADER & STUDIO TOOLBAR */
+    .studio-header {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .studio-header h2 {
+      font-size: 1.5rem;
+      color: var(--primary-dark);
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      font-family: 'Cinzel', serif;
+    }
+
+    .studio-header p {
+      font-size: 0.84rem;
+      color: #334155;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .studio-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      padding: 10px 16px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      max-width: 860px;
+      width: 100%;
+    }
+
+    .tool-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tool-divider {
+      width: 1px;
+      background: #cbd5e1;
+      height: 26px;
+      margin: 0 4px;
+    }
+
+    .tool-btn {
+      padding: 7px 12px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .tool-btn:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+    }
+
+    .tool-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary-dark);
+    }
+
+    .tool-btn.scanner-trigger {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+
+    .tool-btn.scanner-trigger:hover {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    }
+
+    .tool-btn.randomize-trigger {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: #ffffff;
+      border-color: #b45309;
+    }
+
+    .tool-btn.randomize-trigger:hover {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .theme-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* PREVIEW STAGE & 3D FLIP CONTAINER */
+    .preview-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 24px;
+      perspective: 1400px;
+    }
+
+    .cards-wrapper {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .cards-wrapper.mode-flip {
+      width: 428px;
+      height: 270px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .cards-wrapper.mode-flip.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .flip-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      top: 0;
+      left: 0;
+    }
+
+    .card-back-face {
+      transform: rotateY(180deg);
+    }
+
+    .cards-wrapper.mode-side {
+      width: auto;
+      height: auto;
+      transform: none !important;
+    }
+
+    .cards-wrapper.mode-side .flip-inner {
+      display: flex;
+      gap: 20px;
+      transform: none !important;
+    }
+
+    .cards-wrapper.mode-side .card-face {
+      position: relative;
+      transform: none !important;
+    }
+
+    /* CR-80 PROPORTIONAL CARD: 428px x 270px */
+    .id-card {
+      width: 428px;
+      height: 270px;
+      border-radius: 12px;
+      border: 2.5px solid var(--primary);
+      background: var(--card-grad);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(11, 61, 145, 0.25);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .id-card:hover {
+      box-shadow: 0 24px 48px rgba(11, 61, 145, 0.32);
+    }
+
+    /* HOLOGRAPHIC SHIMMER OVERLAY ON HOVER */
+    .holo-sheen-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+      transition: opacity 0.3s;
+    }
+
+    .id-card:hover .holo-sheen-layer {
+      opacity: 1;
+      animation: sheenSweep 1.5s ease-in-out infinite;
+    }
+
+    @keyframes sheenSweep {
+      0% { transform: translateX(-100%) rotate(25deg); }
+      100% { transform: translateX(200%) rotate(25deg); }
+    }
+
+    /* SECURITY BARS & WATERMARK */
+    .security-strip {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #ff9933 0%, #ffffff 50%, #138808 100%);
+      z-index: 3;
+    }
+
+    .security-strip-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #138808 0%, #ffffff 50%, #ff9933 100%);
+      z-index: 3;
+    }
+
+    .card-watermark {
+      position: absolute;
+      top: 56%;
+      left: 44%;
+      transform: translate(-50%, -50%);
+      width: 160px;
+      height: 160px;
+      opacity: 0.085;
+      pointer-events: none;
+      z-index: 0;
+      object-fit: contain;
+    }
+
+    .dynamic-svg-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .card-layer {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* FRONT HEADER */
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      border-bottom: 1.5px solid var(--primary);
+      padding-bottom: 3px;
+      margin-top: 2px;
+    }
+
+    .header-logo {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .header-center {
+      flex: 1;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .header-center h1 {
+      font-size: 10.6pt;
+      font-weight: 900;
+      color: var(--primary-dark);
+      line-height: 1.05;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+      font-family: 'Cinzel', serif;
+    }
+
+    .header-center .ministry-sub {
+      font-size: 6.5pt;
+      font-weight: 700;
+      color: #334155;
+      margin-top: 1px;
+    }
+
+    .batch-pill {
+      background: var(--primary);
+      color: #fff;
+      font-size: 6.8pt;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-align: center;
+      line-height: 1.1;
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .batch-pill span {
+      display: block;
+      font-size: 5pt;
+      font-weight: 600;
+      opacity: 0.9;
+      text-transform: uppercase;
+    }
+
+    /* UNIFIED LOCATION BAR */
+    .common-location-bar {
+      background: rgba(11, 61, 145, 0.08);
+      border: 0.8px solid rgba(11, 61, 145, 0.25);
+      border-radius: 4px;
+      padding: 2px 4px;
+      margin-top: 2px;
+      text-align: center;
+      font-size: 6.2pt;
+      font-weight: 800;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* CARD BODY & DETAILS */
+    .card-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex: 1;
+      padding: 2px 0;
+    }
+
+    .left-emblem-strip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      width: 38px;
+    }
+
+    .emv-chip-svg {
+      width: 32px;
+      height: 25px;
+      border-radius: 3px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .house-crest-pill {
+      font-size: 5.5pt;
+      font-weight: 900;
+      padding: 2px 4px;
+      border-radius: 3px;
+      text-align: center;
+      text-transform: uppercase;
+      width: 100%;
+      background: var(--house-bg, #fee2e2);
+      color: var(--house-color, #b91c1c);
+      border: 0.8px solid currentColor;
+    }
+
+    .details-table {
+      flex: 1;
+      display: table;
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .detail-row {
+      display: table-row;
+    }
+
+    .detail-label {
+      display: table-cell;
+      font-size: 7.1pt;
+      font-weight: 800;
+      color: #0f172a;
+      padding: 1.1px 4px 1.1px 0;
+      white-space: nowrap;
+      width: 76px;
+      vertical-align: middle;
+    }
+
+    .detail-val {
+      display: table-cell;
+      font-size: 7.2pt;
+      font-weight: 700;
+      color: var(--field-red);
+      padding: 1.1px 2px;
+      border-bottom: 0.7px dotted rgba(100, 116, 139, 0.65);
+      line-height: 1.15;
+      word-break: break-word;
+      vertical-align: middle;
+    }
+
+    .photo-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+
+    .photo-box {
+      width: 82px;
+      height: 102px;
+      border: 1.5px solid var(--primary);
+      border-radius: 6px;
+      background: #e2e8f0;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform-origin: center center;
+    }
+
+    .hologram-seal {
+      font-size: 5pt;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fef08a 0%, #ca8a04 50%, #fef08a 100%);
+      color: #451a03;
+      padding: 1px 6px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    /* FOOTER */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-top: 1px solid rgba(11, 61, 145, 0.25);
+      padding-top: 2px;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    #miniQr {
+      width: 28px;
+      height: 28px;
+      background: #fff;
+      padding: 1px;
+      border-radius: 3px;
+      border: 0.5px solid #cbd5e1;
+    }
+
+    #miniQr img, #miniQr canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .id-meta {
+      font-size: 6.4pt;
+      font-weight: 800;
+      color: var(--primary-dark);
+      line-height: 1.15;
+    }
+
+    .id-meta span {
+      display: block;
+      font-size: 5.6pt;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .signature-area {
+      text-align: right;
+      min-width: 100px;
+    }
+
+    .sign-script {
+      font-family: 'Great Vibes', cursive;
+      font-size: 13pt;
+      color: #0f172a;
+      line-height: 0.9;
+      margin-bottom: 1px;
+    }
+
+    .sign-title {
+      font-size: 6pt;
+      font-weight: 800;
+      color: #1e293b;
+      border-top: 1px solid #334155;
+      padding-top: 1px;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+    }
+
+    /* ==========================================================================
+       BACK SIDE STYLING
+       ========================================================================== */
+    .back-card {
+      background: var(--card-grad);
+    }
+
+    .back-top-banner {
+      background: var(--primary);
+      color: #fff;
+      font-size: 7pt;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .back-top-banner .tag {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 5.8pt;
+    }
+
+    .back-main-grid {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      padding: 4px 0;
+      align-items: stretch;
+    }
+
+    .back-info-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .back-meta-box {
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(11, 61, 145, 0.2);
+      border-radius: 6px;
+      padding: 5px;
+      font-size: 6.8pt;
+    }
+
+    .back-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+
+    .back-row strong {
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    .back-row span {
+      color: var(--field-red);
+      font-weight: 700;
+    }
+
+    .blood-pill {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 0.5px 4px;
+      border-radius: 3px;
+      font-weight: 900;
+    }
+
+    .instructions-box {
+      font-size: 5.8pt;
+      color: #334155;
+      line-height: 1.25;
+      background: rgba(11, 61, 145, 0.04);
+      padding: 4px 6px;
+      border-radius: 5px;
+      border-left: 2.5px solid var(--primary);
+    }
+
+    .instructions-box ul {
+      margin-left: 10px;
+    }
+
+    .back-qr-col {
+      width: 95px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(11, 61, 145, 0.2);
+      border-radius: 6px;
+      padding: 4px;
+      flex-shrink: 0;
+    }
+
+    .qr-bracket-wrap {
+      width: 60px;
+      height: 60px;
+      background: #fff;
+      padding: 2px;
+      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #backLargeQr img, #backLargeQr canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .qr-scan-caption {
+      font-size: 5.2pt;
+      font-weight: 800;
+      color: var(--primary-dark);
+      text-align: center;
+      margin-top: 2px;
+      text-transform: uppercase;
+    }
+
+    .barcode-bars {
+      width: 80px;
+      height: 10px;
+      background: repeating-linear-gradient(90deg, #0f172a, #0f172a 1.5px, #fff 1.5px, #fff 3px);
+      margin-top: 3px;
+      border-radius: 2px;
+    }
+
+    .back-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(11, 61, 145, 0.25);
+      padding-top: 3px;
+      font-size: 5.6pt;
+      color: #475569;
+    }
+
+    .return-addr {
+      max-width: 280px;
+      line-height: 1.15;
+    }
+
+    .official-stamp-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .side-badge-row {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    /* ==========================================================================
+       CONTROLS PANEL
+       ========================================================================== */
+    .controls-panel {
+      background: #ffffff;
+      width: 100%;
+      max-width: 860px;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      margin-bottom: 24px;
+    }
+
+    .panel-section-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .field-group.span-2 {
+      grid-column: span 2;
+    }
+
+    .field-group label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .field-group input, .field-group select {
+      padding: 8px 10px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 7px;
+      font-size: 0.84rem;
+      font-family: inherit;
+      background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field-group input:focus, .field-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(11, 61, 145, 0.12);
+    }
+
+    .photo-sliders {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      background: #f8fafc;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 18px;
+    }
+
+    .slider-item {
+      flex: 1;
+      min-width: 140px;
+      display: flex;
+      flex-direction: column;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .slider-item input {
+      margin-top: 4px;
+    }
+
+    .action-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 160px;
+      padding: 11px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+    }
+
+    .btn-print { background: var(--primary); color: #ffffff; }
+    .btn-pdf { background: #b91c1c; color: #ffffff; }
+    .btn-jpg { background: #15803d; color: #ffffff; }
+    .btn-jpg-back { background: #0f766e; color: #ffffff; }
+
+    /* SAVED GALLERY */
+    .gallery-section {
+      width: 100%;
+      max-width: 860px;
+      margin-bottom: 40px;
+    }
+
+    .gallery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .gallery-header h3 {
+      font-size: 1rem;
+      color: #334155;
+    }
+
+    .gallery-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    .gallery-item {
+      background: #ffffff;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 220px;
+    }
+
+    .gallery-item img {
+      width: 204px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .gallery-item span {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .gallery-item-actions {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .gallery-mini-btn {
+      flex: 1;
+      padding: 4px 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #1e293b;
+      cursor: pointer;
+    }
+
+    .gallery-mini-btn:hover { background: #e2e8f0; }
+    .gallery-mini-btn.del { color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
+
+    /* ==========================================================================
+       MODAL SCANNER & VERIFIER
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .scanner-modal {
+      background: #ffffff;
+      width: 100%;
+      max-width: 520px;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+      position: relative;
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .modal-top h3 {
+      font-size: 1.05rem;
+      color: var(--primary-dark);
+      font-weight: 800;
+    }
+
+    .close-modal-btn {
+      background: #f1f5f9;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      color: #334155;
+    }
+
+    .scanner-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 10px;
+    }
+
+    .scanner-tab-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .scanner-tab-btn.active {
+      background: #ffffff;
+      color: var(--primary-dark);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .scanner-pane { display: none; }
+    .scanner-pane.active { display: block; }
+
+    .camera-viewport-wrap {
+      position: relative;
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0f172a;
+      min-height: 220px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #qrVideoEl {
+      width: 100%;
+      max-height: 260px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .laser-reticle {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border: 2px solid rgba(56, 189, 248, 0.85);
+      border-radius: 12px;
+      box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.5);
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .laser-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background: linear-gradient(90deg, transparent, #38bdf8, #ef4444, #38bdf8, transparent);
+      animation: laserSweep 2s ease-in-out infinite;
+    }
+
+    @keyframes laserSweep {
+      0%, 100% { top: 5%; }
+      50% { top: 93%; }
+    }
+
+    .upload-drop-zone {
+      border: 2px dashed #94a3b8;
+      border-radius: 12px;
+      padding: 24px 16px;
+      text-align: center;
+      background: #f8fafc;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .upload-drop-zone:hover {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .scan-result-card {
+      background: #f0fdf4;
+      border: 1.5px solid #22c55e;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .scan-result-card.visible { display: block; }
+    .scan-result-card h4 {
+      font-size: 0.88rem;
+      color: #15803d;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .scan-parsed-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      font-size: 0.74rem;
+    }
+
+    .scan-parsed-grid div {
+      background: #ffffff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #bbf7d0;
+    }
+
+    .scan-parsed-grid strong {
+      display: block;
+      font-size: 0.62rem;
+      color: #166534;
+      text-transform: uppercase;
+    }
+
+    /* TOAST */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      z-index: 2000;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .toast-msg.show { transform: translateX(-50%) translateY(0); }
+
+    /* ==========================================================================
+       PRECISION PRINT STYLESHEET (ZERO CLIPPING / CR-80 CALIBRATED)
+       ========================================================================== */
+    @page { size: auto; margin: 10mm; }
+
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body { background: #ffffff !important; padding: 0 !important; margin: 0 !important; display: block !important; }
+      .studio-header, .studio-toolbar, .controls-panel, .gallery-section, .side-badge-row { display: none !important; }
+      .preview-stage { margin: 0 !important; padding: 0 !important; perspective: none !important; display: block !important; }
+      .cards-wrapper { transform: none !important; display: block !important; width: auto !important; height: auto !important; }
+      .cards-wrapper.mode-flip { transform: none !important; width: 428px !important; height: 270px !important; margin-bottom: 20px !important; }
+      .cards-wrapper.mode-side { display: flex !important; gap: 20px !important; }
+      .cards-wrapper.mode-side .card-face { position: relative !important; transform: none !important; }
+      .flip-inner { transform: none !important; }
+      .card-face { position: relative !important; transform: none !important; backface-visibility: visible !important; }
+      .card-back-face { transform: none !important; }
+      .id-card { width: 428px !important; height: 270px !important; box-shadow: none !important; page-break-inside: avoid !important; break-inside: avoid !important; margin: 0 auto 15px auto !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="studio-header">
+    <h2>PM SHRI JNV ID Card Studio Pro &amp; Verification Suite</h2>
+    <p>Print-Calibrated CR-80 Smart Student Identity Card Generator &amp; QR Cryptographic Suite</p>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="studio-toolbar">
+    <div class="tool-group">
+      <button class="tool-btn active" id="btnViewFlip" onclick="setViewMode('flip')">🔄 3D Flip View</button>
+      <button class="tool-btn" id="btnViewSide" onclick="setViewMode('side')">🪪 Dual Side-by-Side</button>
+      <button class="tool-btn" id="btnFlipCard" onclick="toggleCardFlip()">↪️ Flip Side</button>
+      <button class="tool-btn active" id="btnTiltToggle" onclick="toggle3DTilt()">✨ 3D Tilt: ON</button>
+    </div>
+
+    <div class="tool-divider"></div>
+
+    <div class="tool-group">
+      <button class="tool-btn active" id="themeRoyal" onclick="setTheme('royal')">
+        <span class="theme-dot" style="background:#0b3d91;"></span> Royal Navy
+      </button>
+      <button class="tool-btn" id="themeEmerald" onclick="setTheme('emerald')">
+        <span class="theme-dot" style="background:#065f46;"></span> Emerald Forest
+      </button>
+      <button class="tool-btn" id="themeCrimson" onclick="setTheme('crimson')">
+        <span class="theme-dot" style="background:#881337;"></span> Crimson Imperial
+      </button>
+      <button class="tool-btn" id="themeGold" onclick="setTheme('gold')">
+        <span class="theme-dot" style="background:#78350f;"></span> Gold Prestige
+      </button>
+    </div>
+
+    <div class="tool-divider"></div>
+
+    <div class="tool-group">
+      <button class="tool-btn randomize-trigger" onclick="randomizeDemoStudent()">🎲 Randomize Profile</button>
+      <button class="tool-btn scanner-trigger" onclick="openScannerModal()">📷 Scan &amp; Verify QR</button>
+    </div>
+  </div>
+
+  <!-- LIVE CARD PREVIEW STAGE -->
+  <div class="preview-stage">
+    <div class="cards-wrapper mode-flip" id="cardsWrapper">
+      <div class="flip-inner" id="flipInner">
+
+        <!-- ==================== FRONT SIDE CARD ==================== -->
+        <div class="card-face card-front-face">
+          <div id="idCardFront" class="id-card front-card">
+            <div class="security-strip"></div>
+            <div class="security-strip-bottom"></div>
+            <div class="holo-sheen-layer"></div>
+
+            <!-- SVG Guilloche & Rosette Background -->
+            <svg class="dynamic-svg-bg" viewBox="0 0 428 270" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="guillocheFront" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <circle cx="20" cy="20" r="18" fill="none" stroke="var(--pattern-stroke)" stroke-width="0.85"/>
+                  <circle cx="20" cy="20" r="11" fill="none" stroke="var(--pattern-accent)" stroke-width="0.6" stroke-dasharray="2.5,2"/>
+                  <path d="M0,20 Q20,0 40,20 Q20,40 0,20 Z" fill="none" stroke="var(--pattern-stroke)" stroke-width="0.65"/>
+                </pattern>
+                <g id="rosetteWheel">
+                  <circle cx="0" cy="0" r="80" fill="none" stroke="var(--pattern-stroke)" stroke-width="0.85"/>
+                  <circle cx="0" cy="0" r="64" fill="none" stroke="var(--pattern-accent)" stroke-width="0.9" stroke-dasharray="3,2"/>
+                  <ellipse cx="0" cy="0" rx="76" ry="24" fill="none" stroke="var(--pattern-stroke)" stroke-width="0.6" transform="rotate(0)"/>
+                  <ellipse cx="0" cy="0" rx="76" ry="24" fill="none" stroke="var(--pattern-stroke)" stroke-width="0.6" transform="rotate(45)"/>
+                  <ellipse cx="0" cy="0" rx="76" ry="24" fill="none" stroke="var(--pattern-stroke)" stroke-width="0.6" transform="rotate(90)"/>
+                </g>
+              </defs>
+              <rect width="428" height="270" fill="url(#guillocheFront)"/>
+              <use href="#rosetteWheel" x="214" y="140"/>
+              <path d="M-10,230 C90,180 215,246 332,194 C386,172 415,186 438,200 L438,275 L-10,275 Z" fill="var(--wave-fill-1)"/>
+            </svg>
+
+            <img
+              class="card-watermark"
+              src="https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Jawahar_Navodaya_Vidyalaya_logo.png/250px-Jawahar_Navodaya_Vidyalaya_logo.png"
+              alt="NVS Watermark"
+              crossorigin="anonymous"
+            />
+
+            <div class="card-layer">
+              <!-- Header -->
+              <div class="card-header">
+                <div class="header-logo">
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Jawahar_Navodaya_Vidyalaya_logo.png/250px-Jawahar_Navodaya_Vidyalaya_logo.png"
+                    alt="JNV Logo"
+                    crossorigin="anonymous"
+                  />
+                </div>
+                <div class="header-center">
+                  <h1>PM SHRI JAWAHAR NAVODAYA VIDYALAYA</h1>
+                  <div class="ministry-sub">Ministry of Education, Govt. of India</div>
+                </div>
+                <div class="batch-pill">
+                  <span>Session</span>
+                  <strong id="dispBatch">2026-27</strong>
+                </div>
+              </div>
+
+              <!-- Unified Location Bar -->
+              <div class="common-location-bar" id="dispCommonLocation">
+                TALUKA: MEHSI • DIST: EAST CHAMPARAN • STATE: BIHAR • REGION: PATNA
+              </div>
+
+              <!-- Body & Details -->
+              <div class="card-body">
+                <div class="left-emblem-strip">
+                  <svg class="emv-chip-svg" viewBox="0 0 36 28" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="goldChipGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fef08a"/>
+                        <stop offset="50%" stop-color="#eab308"/>
+                        <stop offset="100%" stop-color="#a16207"/>
+                      </linearGradient>
+                    </defs>
+                    <rect x="0.5" y="0.5" width="35" height="27" rx="4" fill="url(#goldChipGrad)" stroke="#713f12" stroke-width="1"/>
+                    <line x1="12" y1="1" x2="12" y2="27" stroke="#713f12" stroke-width="0.9"/>
+                    <line x1="24" y1="1" x2="24" y2="27" stroke="#713f12" stroke-width="0.9"/>
+                    <line x1="1" y1="9.5" x2="12" y2="9.5" stroke="#713f12" stroke-width="0.9"/>
+                    <line x1="24" y1="9.5" x2="35" y2="9.5" stroke="#713f12" stroke-width="0.9"/>
+                  </svg>
+                  <div class="house-crest-pill" id="dispHouseBadge">NILGIRI</div>
+                </div>
+
+                <div class="details-table">
+                  <div class="detail-row">
+                    <div class="detail-label">Student Name:</div>
+                    <div class="detail-val" id="dispName">Aarav Sharma</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Father's Name:</div>
+                    <div class="detail-val" id="dispFather">Rajesh Sharma</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Mother's Name:</div>
+                    <div class="detail-val" id="dispMother">Meena Sharma</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Date of Birth:</div>
+                    <div class="detail-val" id="dispDOB">2009-05-14</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">House / Class:</div>
+                    <div class="detail-val" id="dispHouse">Nilgiri (XI - Science)</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">GR / Adm No.:</div>
+                    <div class="detail-val" id="dispGR">JNV-2026-309</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">Contact No.:</div>
+                    <div class="detail-val" id="dispMobile">+91 98350 12345</div>
+                  </div>
+                </div>
+
+                <div class="photo-column">
+                  <div class="photo-box">
+                    <img id="studentPhoto" src="" alt="Student Portrait" />
+                  </div>
+                  <div class="hologram-seal">NVS</div>
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div class="card-footer">
+                <div class="footer-left">
+                  <div id="miniQr"></div>
+                  <div class="id-meta">
+                    ID: <strong id="dispCardCode">JNV-2026-309</strong>
+                    <span>Valid Academic Session</span>
+                  </div>
+                </div>
+                <div class="signature-area">
+                  <div class="sign-script" id="dispSign">Dr. S. K. Jha</div>
+                  <div class="sign-title">Signature of Principal</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== BACK SIDE CARD ==================== -->
+        <div class="card-face card-back-face">
+          <div id="idCardBack" class="id-card back-card">
+            <div class="security-strip"></div>
+            <div class="security-strip-bottom"></div>
+            <div class="holo-sheen-layer"></div>
+
+            <svg class="dynamic-svg-bg" viewBox="0 0 428 270" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="guillocheBack" width="32" height="32" patternUnits="userSpaceOnUse">
+                  <polygon points="16,1 31,16 16,31 1,16" fill="none" stroke="var(--pattern-stroke)" stroke-width="0.8"/>
+                  <circle cx="16" cy="16" r="6" fill="none" stroke="var(--pattern-accent)" stroke-width="0.6"/>
+                </pattern>
+              </defs>
+              <rect width="428" height="270" fill="url(#guillocheBack)"/>
+              <use href="#rosetteWheel" x="214" y="135"/>
+            </svg>
+
+            <img
+              class="card-watermark"
+              src="https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Jawahar_Navodaya_Vidyalaya_logo.png/250px-Jawahar_Navodaya_Vidyalaya_logo.png"
+              alt="NVS Watermark Back"
+              crossorigin="anonymous"
+            />
+
+            <div class="card-layer">
+              <div class="back-top-banner">
+                <span>STUDENT IDENTITY &amp; EMERGENCY RECORD</span>
+                <span class="tag" id="dispBackValid">VALID UPTO: 31-03-2027</span>
+              </div>
+
+              <div class="back-main-grid">
+                <div class="back-info-col">
+                  <div class="back-meta-box">
+                    <div class="back-row">
+                      <strong>Blood Group:</strong>
+                      <span><span class="blood-pill" id="dispBlood">O+</span> &nbsp;|&nbsp; <b>Hostel/Lib:</b> <span id="dispHostelCode">NLG-B04</span></span>
+                    </div>
+                    <div class="back-row">
+                      <strong>Emergency No.:</strong>
+                      <span id="dispEmergency">+91 94310 98765</span>
+                    </div>
+                    <div class="back-row">
+                      <strong>Home Address:</strong>
+                      <span id="dispAddress">At &amp; Po. Mehsi, Near Gandhi Chowk, Dist. East Champaran, Bihar - 845426</span>
+                    </div>
+                  </div>
+
+                  <div class="instructions-box">
+                    <strong>Important Vidyalaya Instructions:</strong>
+                    <ul>
+                      <li>This card is non-transferable property of Navodaya Vidyalaya Samiti.</li>
+                      <li>Must be worn visibly within campus &amp; during official tours.</li>
+                      <li>Loss must be reported immediately to House Master / Principal.</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="back-qr-col">
+                  <div class="qr-bracket-wrap">
+                    <div id="backLargeQr"></div>
+                  </div>
+                  <div class="qr-scan-caption">Scan to Verify<br/>Student Record</div>
+                  <div class="barcode-bars"></div>
+                </div>
+              </div>
+
+              <div class="back-footer">
+                <div class="return-addr" id="dispReturnSchool">
+                  <strong>If found, return to:</strong> PM SHRI Jawahar Navodaya Vidyalaya, Mehsi, East Champaran, Bihar - 845426 (Patna Region)
+                </div>
+                <div class="official-stamp-badge">
+                  <svg width="24" height="24" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="18" cy="18" r="16" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-dasharray="2.5,1.5"/>
+                    <text x="18" y="16.5" text-anchor="middle" font-size="5.5" font-weight="900" fill="var(--primary)">PM SHRI</text>
+                    <text x="18" y="22.5" text-anchor="middle" font-size="5" font-weight="800" fill="var(--primary)">JNV SEAL</text>
+                  </svg>
+                  <div>
+                    <div>House Master</div>
+                    <div style="font-size:5pt; color:#475569;">Verified Pass</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="side-badge-row">
+      <span id="currentSideIndicator">Viewing: <strong>Front Side</strong> • Hover over card for holographic shimmer</span>
+    </div>
+  </div>
+
+  <!-- CONTROLS PANEL -->
+  <div class="controls-panel">
+    <div class="panel-section-title">
+      <span>1. School Location, Session &amp; House Crest</span>
+      <button class="tool-btn randomize-trigger" onclick="randomizeDemoStudent()">🎲 Randomize Profile</button>
+    </div>
+    <div class="form-grid">
+      <div class="field-group">
+        <label>Taluka</label>
+        <input type="text" id="inTaluka" value="Mehsi" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>District</label>
+        <input type="text" id="inDistrict" value="East Champaran" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>State</label>
+        <input type="text" id="inState" value="Bihar" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Region</label>
+        <input type="text" id="inRegion" value="Patna" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Academic Session</label>
+        <input type="text" id="inBatch" value="2026-27" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>House Crest</label>
+        <select id="inHouseCrest" onchange="applyHouseCrest()">
+          <option value="ARAVALLI">🔵 Aravalli House (Blue)</option>
+          <option value="NILGIRI" selected>🟢 Nilgiri House (Green)</option>
+          <option value="SHIVALIK">🔴 Shivalik House (Red)</option>
+          <option value="UDAIGIRI">🟡 Udaigiri House (Gold)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="panel-section-title">
+      <span>2. Front Side Student Information &amp; Principal Sign</span>
+    </div>
+    <div class="form-grid">
+      <div class="field-group">
+        <label>Student Name</label>
+        <input type="text" id="inName" value="Aarav Sharma" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Father's Name</label>
+        <input type="text" id="inFather" value="Rajesh Sharma" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Mother's Name</label>
+        <input type="text" id="inMother" value="Meena Sharma" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Date of Birth</label>
+        <input type="date" id="inDOB" value="2009-05-14" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>House / Class</label>
+        <input type="text" id="inHouse" value="Nilgiri (XI - Science)" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>GR / Admission No.</label>
+        <input type="text" id="inGR" value="JNV-2026-309" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Mobile Number</label>
+        <input type="tel" id="inMobile" value="+91 98350 12345" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Principal Signature Name</label>
+        <input type="text" id="inSign" value="Dr. S. K. Jha" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Upload Student Photo</label>
+        <input type="file" id="inPhoto" accept="image/*" />
+      </div>
+    </div>
+
+    <div class="panel-section-title">
+      <span>3. Back Side Emergency, Medical &amp; Validity Details</span>
+    </div>
+    <div class="form-grid">
+      <div class="field-group">
+        <label>Blood Group</label>
+        <select id="inBlood" onchange="syncCard()">
+          <option value="O+" selected>O+ (O Positive)</option>
+          <option value="O-">O- (O Negative)</option>
+          <option value="A+">A+ (A Positive)</option>
+          <option value="A-">A- (A Negative)</option>
+          <option value="B+">B+ (B Positive)</option>
+          <option value="B-">B- (B Negative)</option>
+          <option value="AB+">AB+ (AB Positive)</option>
+          <option value="AB-">AB- (AB Negative)</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Hostel / Library Code</label>
+        <input type="text" id="inHostelCode" value="NLG-B04" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Emergency Contact No.</label>
+        <input type="tel" id="inEmergency" value="+91 94310 98765" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Card Valid Upto</label>
+        <input type="text" id="inValidUpto" value="31-03-2027" oninput="syncCard()" />
+      </div>
+      <div class="field-group span-2">
+        <label>Residential Address</label>
+        <input type="text" id="inAddress" value="At & Po. Mehsi, Near Gandhi Chowk, Dist. East Champaran, Bihar - 845426" oninput="syncCard()" />
+      </div>
+    </div>
+
+    <!-- Photo Sliders -->
+    <div class="photo-sliders">
+      <div class="slider-item">
+        <label>Photo Zoom: <span id="zoomVal">1.00x</span></label>
+        <input type="range" id="photoZoom" min="0.8" max="2.0" step="0.05" value="1.0" oninput="adjustPhoto()" />
+      </div>
+      <div class="slider-item">
+        <label>Horizontal Offset (X)</label>
+        <input type="range" id="photoX" min="-30" max="30" step="1" value="0" oninput="adjustPhoto()" />
+      </div>
+      <div class="slider-item">
+        <label>Vertical Offset (Y)</label>
+        <input type="range" id="photoY" min="-30" max="30" step="1" value="0" oninput="adjustPhoto()" />
+      </div>
+    </div>
+
+    <!-- Export Action Bar -->
+    <div class="action-bar">
+      <button class="btn btn-print" onclick="printCleanCard()">🖨️ Print ID Card (Front &amp; Back)</button>
+      <button class="btn btn-pdf" onclick="exportCardPDF()">📄 Save as PDF (CR-80 Print Ready)</button>
+      <button class="btn btn-jpg" onclick="exportCardJPG('front')">🖼️ Save Front JPG</button>
+      <button class="btn btn-jpg-back" onclick="exportCardJPG('back')">🪪 Save Back JPG</button>
+    </div>
+  </div>
+
+  <!-- GALLERY -->
+  <div class="gallery-section">
+    <div class="gallery-header">
+      <h3>Saved ID Cards Gallery (High-Res Exports)</h3>
+      <button class="tool-btn" onclick="document.getElementById('galleryGrid').innerHTML=''">🗑️ Clear Gallery</button>
+    </div>
+    <div class="gallery-grid" id="galleryGrid"></div>
+  </div>
+
+  <!-- QR SCANNER MODAL -->
+  <div class="modal-backdrop" id="scannerModal" onclick="if(event.target===this) closeScannerModal()">
+    <div class="scanner-modal">
+      <div class="modal-top">
+        <h3>📷 JNV Smart ID QR Scanner &amp; Verifier</h3>
+        <button class="close-modal-btn" onclick="closeScannerModal()">×</button>
+      </div>
+
+      <div class="scanner-tabs">
+        <button class="scanner-tab-btn active" id="tabBtnCamera" onclick="switchScannerTab('camera')">🎥 Live Camera</button>
+        <button class="scanner-tab-btn" id="tabBtnUpload" onclick="switchScannerTab('upload')">📁 Upload Image</button>
+        <button class="scanner-tab-btn" id="tabBtnCurrent" onclick="switchScannerTab('current')">⚡ Verify Active Card</button>
+      </div>
+
+      <div class="scanner-pane active" id="paneCamera">
+        <div class="camera-viewport-wrap">
+          <video id="qrVideoEl" playsinline muted></video>
+          <div class="laser-reticle"><div class="laser-line"></div></div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-print" style="flex:1; padding:9px;" onclick="startCameraScanner()">▶️ Start Camera</button>
+          <button class="btn" style="flex:1; padding:9px; background:#475569; color:#fff;" onclick="stopCameraScanner()">⏹️ Stop</button>
+        </div>
+      </div>
+
+      <div class="scanner-pane" id="paneUpload">
+        <label class="upload-drop-zone" style="display:block;">
+          <div style="font-size:1.5rem; margin-bottom:4px;">🖼️</div>
+          <div style="font-weight:800; font-size:0.84rem; color:#0f172a;">Click to Upload ID Card Image</div>
+          <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">Decodes embedded JNV verification QR payload</div>
+          <input type="file" id="qrImageFile" accept="image/*" style="display:none;" onchange="scanUploadedImage(event)" />
+        </label>
+      </div>
+
+      <div class="scanner-pane" id="paneCurrent">
+        <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:12px; padding:14px; text-align:center; margin-bottom:10px;">
+          <div style="font-size:0.82rem; font-weight:700; color:#1e293b; margin-bottom:8px;">
+            Run instant cryptographic verification on the currently active student ID.
+          </div>
+          <button class="btn btn-jpg" style="width:100%;" onclick="simulateScanCurrentCard()">⚡ Verify Active Card QR</button>
+        </div>
+      </div>
+
+      <div class="scan-result-card" id="scanResultCard">
+        <h4>✅ Verified PM SHRI JNV Identity Record</h4>
+        <div class="scan-parsed-grid" id="scanParsedGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-msg" id="toastMsg"></div>
+
+  <script>
+    let isFlipped = false;
+    let currentViewMode = 'flip';
+    let tiltEnabled = true;
+    let cameraStream = null;
+    let scanAnimFrame = null;
+    let demoIndex = 0;
+
+    /* SVG Avatar Generator */
+    function buildAvatarSVG(bgTop, bgBot, skin, hair, shirt, tie, isFemale) {
+      const hairBack = isFemale ? `<path d="M26,48 C24,95 30,124 38,132 L82,132 C90,124 96,95 94,48 Z" fill="${hair}"/>` : ``;
+      const hairFront = isFemale ? `<path d="M34,46 C34,22 86,22 86,46 C82,34 64,30 60,36 C56,30 38,34 34,46 Z" fill="${hair}"/>` : `<path d="M34,46 C33,20 87,20 86,46 C84,33 72,27 60,29 C46,27 36,34 34,46 Z" fill="${hair}"/>`;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="150" viewBox="0 0 120 150">
+        <defs><linearGradient id="bgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${bgTop}"/><stop offset="100%" stop-color="${bgBot}"/></linearGradient></defs>
+        <rect width="120" height="150" fill="url(#bgG)"/>
+        ${hairBack}
+        <path d="M16,150 C18,112 38,104 60,104 C82,104 102,112 104,150 Z" fill="${shirt}"/>
+        <polygon points="48,104 60,120 72,104 66,100 54,100" fill="#ffffff"/>
+        <polygon points="57,112 63,112 65,146 60,150 55,146" fill="${tie}"/>
+        <rect x="52" y="84" width="16" height="22" rx="6" fill="${skin}"/>
+        <ellipse cx="60" cy="58" rx="23" ry="28" fill="${skin}"/>
+        <circle cx="51" cy="56" r="2.3" fill="#1e293b"/><circle cx="69" cy="56" r="2.3" fill="#1e293b"/>
+        <path d="M53,69 Q60,75 67,69" fill="none" stroke="#7c2d12" stroke-width="2" stroke-linecap="round"/>
+        ${hairFront}
+      </svg>`;
+      return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+    }
+
+    const DEMO_STUDENTS = [
+      {
+        taluka: "Mehsi", district: "East Champaran", state: "Bihar", region: "Patna", batch: "2026-27", crest: "NILGIRI",
+        name: "Aarav Sharma", father: "Rajesh Sharma", mother: "Meena Sharma", dob: "2009-05-14", house: "Nilgiri (XI - Science)",
+        gr: "JNV-2026-309", mobile: "+91 98350 12345", sign: "Dr. S. K. Jha", blood: "O+", hostel: "NLG-B04",
+        emergency: "+91 94310 98765", validUpto: "31-03-2027", address: "At & Po. Mehsi, Near Gandhi Chowk, Dist. East Champaran, Bihar - 845426",
+        avatar: buildAvatarSVG("#d1fae5", "#6ee7b7", "#f1c29b", "#0f172a", "#065f46", "#d97706", false)
+      },
+      {
+        taluka: "Ankleshwar", district: "Bharuch", state: "Gujarat", region: "Pune", batch: "2026-27", crest: "ARAVALLI",
+        name: "Deepu Kumar Rajak", father: "Rajendra Rajak", mother: "Sunita Devi", dob: "2008-12-21", house: "Aravalli (XII - Science)",
+        gr: "JNV-2026-104", mobile: "+91 98765 43210", sign: "Deepu Kumar", blood: "B+", hostel: "ARV-B12",
+        emergency: "+91 98765 43210", validUpto: "31-03-2027", address: "At & Post Ankleshwar, Dist. Bharuch, Gujarat - 393001",
+        avatar: buildAvatarSVG("#dbeafe", "#93c5fd", "#eab68c", "#1e293b", "#1e3a8a", "#b91c1c", false)
+      },
+      {
+        taluka: "Anantnag", district: "Anantnag", state: "Jammu & Kashmir", region: "Chandigarh", batch: "2026-27", crest: "SHIVALIK",
+        name: "Zoya Mir", father: "Tariq Mir", mother: "Yasmeena Mir", dob: "2010-08-19", house: "Shivalik (X - B)",
+        gr: "JNV-2026-512", mobile: "+91 96220 11223", sign: "Sh. A. W. Malik", blood: "AB+", hostel: "SHV-G08",
+        emergency: "+91 96220 11224", validUpto: "31-03-2027", address: "Main Bazaar, Anantnag, J&K - 192101",
+        avatar: buildAvatarSVG("#ffe4e6", "#fda4af", "#ebd2be", "#4c0519", "#881337", "#f59e0b", true)
+      }
+    ];
+
+    function applyDemoProfile(profile) {
+      document.getElementById("inTaluka").value = profile.taluka;
+      document.getElementById("inDistrict").value = profile.district;
+      document.getElementById("inState").value = profile.state;
+      document.getElementById("inRegion").value = profile.region;
+      document.getElementById("inBatch").value = profile.batch;
+      document.getElementById("inHouseCrest").value = profile.crest;
+
+      document.getElementById("inName").value = profile.name;
+      document.getElementById("inFather").value = profile.father;
+      document.getElementById("inMother").value = profile.mother;
+      document.getElementById("inDOB").value = profile.dob;
+      document.getElementById("inHouse").value = profile.house;
+      document.getElementById("inGR").value = profile.gr;
+      document.getElementById("inMobile").value = profile.mobile;
+      document.getElementById("inSign").value = profile.sign;
+
+      document.getElementById("inBlood").value = profile.blood;
+      document.getElementById("inHostelCode").value = profile.hostel;
+      document.getElementById("inEmergency").value = profile.emergency;
+      document.getElementById("inValidUpto").value = profile.validUpto;
+      document.getElementById("inAddress").value = profile.address;
+
+      document.getElementById("studentPhoto").src = profile.avatar;
+      document.getElementById("photoZoom").value = "1.0";
+      document.getElementById("photoX").value = "0";
+      document.getElementById("photoY").value = "0";
+      adjustPhoto();
+
+      applyHouseCrest();
+      syncCard();
+    }
+
+    function randomizeDemoStudent() {
+      demoIndex = (demoIndex + 1) % DEMO_STUDENTS.length;
+      const chosen = DEMO_STUDENTS[demoIndex];
+      applyDemoProfile(chosen);
+      showToast(`Loaded profile: ${chosen.name} (${chosen.crest} House)`);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toastMsg");
+      t.innerText = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 3000);
+    }
+
+    /* Theme Switcher */
+    function setTheme(theme) {
+      document.body.classList.remove("theme-emerald", "theme-crimson", "theme-gold");
+      document.querySelectorAll("#themeRoyal, #themeEmerald, #themeCrimson, #themeGold").forEach(b => b.classList.remove("active"));
+      if (theme === "emerald") { document.body.classList.add("theme-emerald"); document.getElementById("themeEmerald").classList.add("active"); }
+      else if (theme === "crimson") { document.body.classList.add("theme-crimson"); document.getElementById("themeCrimson").classList.add("active"); }
+      else if (theme === "gold") { document.body.classList.add("theme-gold"); document.getElementById("themeGold").classList.add("active"); }
+      else { document.getElementById("themeRoyal").classList.add("active"); }
+      syncCard();
+    }
+
+    /* View Modes */
+    function setViewMode(mode) {
+      const wrapper = document.getElementById("cardsWrapper");
+      document.getElementById("btnViewFlip").classList.remove("active");
+      document.getElementById("btnViewSide").classList.remove("active");
+
+      if (mode === 'flip') {
+        currentViewMode = 'flip';
+        wrapper.className = "cards-wrapper mode-flip" + (isFlipped ? " flipped" : "");
+        document.getElementById("btnViewFlip").classList.add("active");
+        document.getElementById("currentSideIndicator").innerHTML = `Viewing: <strong>${isFlipped ? 'Back Side' : 'Front Side'}</strong> • Hover over card for holographic shimmer`;
+      } else {
+        currentViewMode = 'side';
+        wrapper.className = "cards-wrapper mode-side";
+        document.getElementById("btnViewSide").classList.add("active");
+        document.getElementById("currentSideIndicator").innerHTML = `Viewing: <strong>Dual Side-by-Side Preview</strong> (Front &amp; Back)`;
+      }
+    }
+
+    function toggleCardFlip() {
+      if (currentViewMode !== 'flip') setViewMode('flip');
+      isFlipped = !isFlipped;
+      const wrapper = document.getElementById("cardsWrapper");
+      if (isFlipped) wrapper.classList.add("flipped");
+      else wrapper.classList.remove("flipped");
+      document.getElementById("currentSideIndicator").innerHTML = `Viewing: <strong>${isFlipped ? 'Back Side' : 'Front Side'}</strong> • Hover over card for holographic shimmer`;
+    }
+
+    let tiltActive = true;
+    function toggle3DTilt() {
+      tiltActive = !tiltActive;
+      const btn = document.getElementById("btnTiltToggle");
+      if (tiltActive) {
+        btn.classList.add("active");
+        btn.innerText = "✨ 3D Tilt: ON";
+      } else {
+        btn.classList.remove("active");
+        btn.innerText = "✨ 3D Tilt: OFF";
+        document.querySelectorAll(".id-card").forEach(c => c.style.transform = "none");
+      }
+    }
+
+    /* 3D Mouse Tilt */
+    document.addEventListener("mousemove", (e) => {
+      if (!tiltActive) return;
+      const cards = document.querySelectorAll(".id-card");
+      cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+          const xc = rect.width / 2;
+          const yc = rect.height / 2;
+          const dx = (x - xc) / xc;
+          const dy = (y - yc) / yc;
+          card.style.transform = `rotateY(${dx * 10}deg) rotateX(${-dy * 10}deg) translateY(-4px)`;
+        } else {
+          card.style.transform = "none";
+        }
+      });
+    });
+
+    /* House Crest Styling */
+    function applyHouseCrest() {
+      const val = document.getElementById("inHouseCrest").value;
+      const badge = document.getElementById("dispHouseBadge");
+      badge.innerText = val;
+      if (val === "ARAVALLI") { badge.style.setProperty("--house-bg", "#dbeafe"); badge.style.setProperty("--house-color", "#1d4ed8"); }
+      else if (val === "NILGIRI") { badge.style.setProperty("--house-bg", "#d1fae5"); badge.style.setProperty("--house-color", "#065f46"); }
+      else if (val === "SHIVALIK") { badge.style.setProperty("--house-bg", "#fee2e2"); badge.style.setProperty("--house-color", "#b91c1c"); }
+      else { badge.style.setProperty("--house-bg", "#fef3c7"); badge.style.setProperty("--house-color", "#b45309"); }
+    }
+
+    /* Photo Upload & Sliders */
+    document.getElementById("inPhoto").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        document.getElementById("studentPhoto").src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function adjustPhoto() {
+      const z = document.getElementById("photoZoom").value;
+      const x = document.getElementById("photoX").value;
+      const y = document.getElementById("photoY").value;
+      document.getElementById("zoomVal").innerText = `${parseFloat(z).toFixed(2)}x`;
+      document.getElementById("studentPhoto").style.transform = `scale(${z}) translate(${x}px, ${y}px)`;
+    }
+
+    /* Sync Data */
+    function syncCard() {
+      const taluka = document.getElementById("inTaluka").value.trim() || "—";
+      const district = document.getElementById("inDistrict").value.trim() || "—";
+      const state = document.getElementById("inState").value.trim() || "—";
+      const region = document.getElementById("inRegion").value.trim() || "—";
+
+      const locBar = document.getElementById("dispCommonLocation");
+      const locText = `TALUKA: ${taluka} • DIST: ${district} • STATE: ${state} • REGION: ${region}`;
+      locBar.innerText = locText;
+      locBar.style.fontSize = locText.length > 76 ? "5.2pt" : "6.2pt";
+
+      const name = document.getElementById("inName").value.trim() || "Student Name";
+      const gr = document.getElementById("inGR").value.trim() || "000";
+      const batch = document.getElementById("inBatch").value.trim() || "2026-27";
+
+      document.getElementById("dispBatch").innerText = batch;
+      document.getElementById("dispName").innerText = name;
+      document.getElementById("dispFather").innerText = document.getElementById("inFather").value.trim() || "—";
+      document.getElementById("dispMother").innerText = document.getElementById("inMother").value.trim() || "—";
+      document.getElementById("dispDOB").innerText = document.getElementById("inDOB").value || "—";
+      document.getElementById("dispHouse").innerText = document.getElementById("inHouse").value.trim() || "—";
+      document.getElementById("dispGR").innerText = gr;
+      document.getElementById("dispMobile").innerText = document.getElementById("inMobile").value.trim() || "—";
+      document.getElementById("dispSign").innerText = document.getElementById("inSign").value.trim() || "Principal";
+      document.getElementById("dispCardCode").innerText = gr;
+
+      document.getElementById("dispBlood").innerText = document.getElementById("inBlood").value;
+      document.getElementById("dispHostelCode").innerText = document.getElementById("inHostelCode").value.trim() || "—";
+      document.getElementById("dispEmergency").innerText = document.getElementById("inEmergency").value.trim() || "—";
+      document.getElementById("dispBackValid").innerText = `VALID UPTO: ${document.getElementById("inValidUpto").value.trim() || "31-03-2027"}`;
+      document.getElementById("dispAddress").innerText = document.getElementById("inAddress").value.trim() || "—";
+      document.getElementById("dispReturnSchool").innerHTML = `<strong>If found, return to:</strong> PM SHRI Jawahar Navodaya Vidyalaya, ${taluka}, ${district}, ${state} (${region} Region)`;
+
+      const qrPayload = `PM SHRI JNV | Name: ${name} | GR: ${gr} | Dist: ${district} (${state}) | Blood: ${document.getElementById("inBlood").value} | Emergency: ${document.getElementById("inEmergency").value}`;
+      renderQRCodes(qrPayload);
+    }
+
+    function renderQRCodes(text) {
+      let darkColor = "#051c47";
+      if (document.body.classList.contains("theme-emerald")) darkColor = "#022c22";
+      else if (document.body.classList.contains("theme-crimson")) darkColor = "#4c0519";
+      else if (document.body.classList.contains("theme-gold")) darkColor = "#451a03";
+
+      const miniBox = document.getElementById("miniQr");
+      miniBox.innerHTML = "";
+      new QRCode(miniBox, { text: text, width: 64, height: 64, colorDark: darkColor, colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+
+      const backBox = document.getElementById("backLargeQr");
+      backBox.innerHTML = "";
+      new QRCode(backBox, { text: text, width: 120, height: 120, colorDark: darkColor, colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+    }
+
+    /* Print & Export Functions */
+    function printCleanCard() {
+      syncCard();
+      window.print();
+    }
+
+    function exportCardPDF() {
+      syncCard();
+      const { jsPDF } = window.jspdf;
+      const frontEl = document.getElementById("idCardFront");
+      const backEl = document.getElementById("idCardBack");
+
+      html2canvas(frontEl, { scale: 3, useCORS: true, backgroundColor: null }).then(frontCanvas => {
+        html2canvas(backEl, { scale: 3, useCORS: true, backgroundColor: null }).then(backCanvas => {
+          const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: [85.6, 54] });
+          pdf.addImage(frontCanvas.toDataURL("image/png"), 'PNG', 0, 0, 85.6, 54);
+          pdf.addPage([85.6, 54], 'landscape');
+          pdf.addImage(backCanvas.toDataURL("image/png"), 'PNG', 0, 0, 85.6, 54);
+
+          const cleanName = (document.getElementById("inName").value.trim() || "Student").replace(/\s+/g, "_");
+          pdf.save(`PM_SHRI_JNV_ID_Card_${cleanName}.pdf`);
+          showToast("CR-80 Print-Ready PDF saved successfully!");
+        });
+      });
+    }
+
+    function exportCardJPG(side) {
+      syncCard();
+      const target = side === 'front' ? document.getElementById("idCardFront") : document.getElementById("idCardBack");
+      const sideTag = side === 'front' ? 'Front' : 'Back';
+
+      html2canvas(target, { scale: 3, useCORS: true, backgroundColor: null }).then(canvas => {
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+        const cleanName = (document.getElementById("inName").value.trim() || "Student").replace(/\s+/g, "_");
+
+        const item = document.createElement("div");
+        item.className = "gallery-item";
+        const img = document.createElement("img");
+        img.src = dataUrl;
+        const caption = document.createElement("span");
+        caption.innerText = `${cleanName} — ${sideTag} (JPG)`;
+
+        const btnRow = document.createElement("div");
+        btnRow.className = "gallery-item-actions";
+
+        const dlBtn = document.createElement("button");
+        dlBtn.className = "gallery-mini-btn";
+        dlBtn.innerText = "⬇️ Save";
+        dlBtn.onclick = () => {
+          const link = document.createElement("a");
+          link.download = `PM_SHRI_JNV_ID_${cleanName}_${sideTag}.jpg`;
+          link.href = dataUrl;
+          link.click();
+        };
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "gallery-mini-btn del";
+        delBtn.innerText = "✕ Delete";
+        delBtn.onclick = () => item.remove();
+
+        btnRow.appendChild(dlBtn);
+        btnRow.appendChild(delBtn);
+        item.appendChild(img);
+        item.appendChild(caption);
+        item.appendChild(btnRow);
+        document.getElementById("galleryGrid").prepend(item);
+
+        const a = document.createElement("a");
+        a.download = `PM_SHRI_JNV_ID_${cleanName}_${sideTag}.jpg`;
+        a.href = dataUrl;
+        a.click();
+        showToast(`${sideTag} Side JPG exported to gallery & downloads!`);
+      });
+    }
+
+    /* QR Scanner & Verifier Modal */
+    function switchScannerTab(tab) {
+      stopCameraScanner();
+      document.querySelectorAll(".scanner-tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".scanner-pane").forEach(p => p.classList.remove("active"));
+
+      if (tab === "camera") {
+        document.getElementById("tabBtnCamera").classList.add("active");
+        document.getElementById("paneCamera").classList.add("active");
+      } else if (tab === "upload") {
+        document.getElementById("tabBtnUpload").classList.add("active");
+        document.getElementById("paneUpload").classList.add("active");
+      } else {
+        document.getElementById("tabBtnCurrent").classList.add("active");
+        document.getElementById("paneCurrent").classList.add("active");
+      }
+    }
+
+    function openScannerModal() { document.getElementById("scannerModal").classList.add("open"); }
+    function closeScannerModal() { stopCameraScanner(); document.getElementById("scannerModal").classList.remove("open"); }
+
+    function stopCameraScanner() {
+      if (scanAnimFrame) { cancelAnimationFrame(scanAnimFrame); scanAnimFrame = null; }
+      if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+      const v = document.getElementById("qrVideoEl");
+      if (v) v.srcObject = null;
+    }
+
+    async function startCameraScanner() {
+      stopCameraScanner();
+      const video = document.getElementById("qrVideoEl");
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = cameraStream;
+        await video.play();
+        showToast("Camera active — position QR code inside the frame.");
+
+        const tick = () => {
+          if (!cameraStream) return;
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "dontInvert" });
+            if (code && code.data) {
+              displayScannedResult(code.data);
+              stopCameraScanner();
+              showToast("QR Code successfully decoded & verified!");
+              return;
+            }
+          }
+          scanAnimFrame = requestAnimationFrame(tick);
+        };
+        scanAnimFrame = requestAnimationFrame(tick);
+      } catch (err) {
+        showToast("Camera access unavailable. Use 'Upload Image' or 'Verify Active Card'.");
+      }
+    }
+
+    function scanUploadedImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "attemptBoth" });
+          if (code && code.data) {
+            displayScannedResult(code.data);
+            showToast("ID Card verified from image upload!");
+          } else {
+            showToast("No readable QR code found in uploaded image.");
+          }
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function simulateScanCurrentCard() {
+      syncCard();
+      const name = document.getElementById("inName").value.trim();
+      const gr = document.getElementById("inGR").value.trim();
+      const house = document.getElementById("inHouse").value.trim();
+      const dob = document.getElementById("inDOB").value;
+      const blood = document.getElementById("inBlood").value;
+      const mobile = document.getElementById("inMobile").value.trim();
+      const district = document.getElementById("inDistrict").value.trim();
+      const state = document.getElementById("inState").value.trim();
+
+      const payload = `PM SHRI JNV | Name: ${name} | GR: ${gr} | Class: ${house} | DOB: ${dob} | Blood: ${blood} | Mob: ${mobile} | Dist: ${district} (${state})`;
+      displayScannedResult(payload);
+      showToast("Active card cryptographic payload verified!");
+    }
+
+    function displayScannedResult(rawText) {
+      const resultCard = document.getElementById("scanResultCard");
+      const grid = document.getElementById("scanParsedGrid");
+      grid.innerHTML = "";
+
+      const parts = rawText.split("|").map(p => p.trim());
+      parts.forEach(part => {
+        const cell = document.createElement("div");
+        if (part.includes(":")) {
+          const [key, ...rest] = part.split(":");
+          cell.innerHTML = `<strong>${key.trim()}</strong>${rest.join(":").trim()}`;
+        } else {
+          cell.innerHTML = `<strong>Institution</strong>${part}`;
+        }
+        grid.appendChild(cell);
+      });
+      resultCard.classList.add("visible");
+    }
+
+    /* Initialize on Load */
+    window.addEventListener("DOMContentLoaded", () => {
+      applyDemoProfile(DEMO_STUDENTS[0]);
+    });
+  </script>
+</body>
+</html>
