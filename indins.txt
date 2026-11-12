@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.90" />
+  <title>PM SHRI JNV ID Card Studio Pro</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root {
+      --primary: #0b3d91;
+      --primary-dark: #06255c;
+      --accent: #00695c;
+      --gold: #b8860b;
+      --field-red: #b71c1c;
+      --bg-page: #eef2f6;
+      --card-grad: linear-gradient(135deg, #f4f9ff 0%, #dcecfb 55%, #cce3f9 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-page);
+      color: #1e293b;
+      min-height: 100vh;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .studio-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .studio-header h2 {
+      font-size: 1.45rem;
+      color: var(--primary-dark);
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+
+    .studio-header p {
+      font-size: 0.85rem;
+      color: #475569;
+      margin-top: 2px;
+    }
+
+    /* PREVIEW STAGE */
+    .preview-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 24px;
+      perspective: 1200px;
+    }
+
+    /* CR-80 PROPORTIONAL CARD: 428px x 270px (scales cleanly to 85.6mm x 54mm on print) */
+    .id-card {
+      width: 428px;
+      height: 270px;
+      border-radius: 12px;
+      border: 2.5px solid var(--primary);
+      background: var(--card-grad);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 16px 36px rgba(11, 61, 145, 0.22);
+      padding: 9px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .id-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 22px 42px rgba(11, 61, 145, 0.28);
+    }
+
+    /* NVS BACKGROUND WATERMARK */
+    .card-watermark {
+      position: absolute;
+      top: 56%;
+      left: 44%;
+      transform: translate(-50%, -50%);
+      width: 155px;
+      height: 155px;
+      opacity: 0.085;
+      pointer-events: none;
+      z-index: 0;
+      object-fit: contain;
+      filter: grayscale(20%);
+    }
+
+    /* SUBTLE SECURITY GUILLOCHE STRIP */
+    .security-strip {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #ff9933 0%, #ffffff 50%, #138808 100%);
+      z-index: 2;
+    }
+
+    .card-layer {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* MAIN HEADER WITH ENLARGED PM SHRI TITLE */
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1.5px solid var(--primary);
+      padding-bottom: 4px;
+      margin-top: 2px;
+    }
+
+    .header-logo {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .header-center {
+      flex: 1;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .header-center h1 {
+      font-size: 11.2pt;
+      font-weight: 900;
+      color: var(--primary-dark);
+      line-height: 1.08;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .header-center .ministry-sub {
+      font-size: 6.8pt;
+      font-weight: 700;
+      color: #334155;
+      margin-top: 1px;
+    }
+
+    /* UNIFIED COMMON LOCATION SECTION (TALUKA, DISTRICT, STATE, REGION) */
+    .common-location-bar {
+      background: rgba(11, 61, 145, 0.08);
+      border: 0.8px solid rgba(11, 61, 145, 0.25);
+      border-radius: 4px;
+      padding: 2px 6px;
+      margin-top: 2px;
+      text-align: center;
+      font-size: 6.7pt;
+      font-weight: 800;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .batch-pill {
+      background: var(--primary);
+      color: #fff;
+      font-size: 7pt;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 4px;
+      text-align: center;
+      line-height: 1.1;
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .batch-pill span {
+      display: block;
+      font-size: 5.2pt;
+      font-weight: 600;
+      opacity: 0.9;
+      text-transform: uppercase;
+    }
+
+    /* MIDDLE BODY */
+    .card-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex: 1;
+      padding: 3px 0;
+    }
+
+    .details-table {
+      flex: 1;
+      display: table;
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .detail-row {
+      display: table-row;
+    }
+
+    .detail-label {
+      display: table-cell;
+      font-size: 7.4pt;
+      font-weight: 800;
+      color: #0f172a;
+      padding: 1.4px 6px 1.4px 0;
+      white-space: nowrap;
+      width: 78px;
+    }
+
+    .detail-val {
+      display: table-cell;
+      font-size: 7.5pt;
+      font-weight: 700;
+      color: var(--field-red);
+      padding: 1.4px 2px;
+      border-bottom: 0.7px dotted #94a3b8;
+      text-transform: capitalize;
+      word-break: break-word;
+    }
+
+    /* STUDENT PHOTO FRAME */
+    .photo-box {
+      width: 84px;
+      height: 104px;
+      border: 1.5px solid var(--primary);
+      border-radius: 6px;
+      background: #e2e8f0;
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform-origin: center center;
+    }
+
+    /* FOOTER & SIGNATURE */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-top: 1px solid rgba(11, 61, 145, 0.28);
+      padding-top: 3px;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #miniQr {
+      width: 28px;
+      height: 28px;
+      background: #fff;
+      padding: 1.5px;
+      border-radius: 3px;
+      border: 0.5px solid #cbd5e1;
+    }
+
+    #miniQr img, #miniQr canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .id-meta {
+      font-size: 6.6pt;
+      font-weight: 800;
+      color: var(--primary-dark);
+      line-height: 1.2;
+    }
+
+    .id-meta span {
+      display: block;
+      font-size: 5.8pt;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .signature-area {
+      text-align: right;
+      min-width: 105px;
+    }
+
+    .sign-script {
+      font-family: 'Brush Script MT', 'Segoe Script', cursive;
+      font-size: 13pt;
+      color: #0f172a;
+      line-height: 0.95;
+      margin-bottom: 1px;
+    }
+
+    .sign-title {
+      font-size: 6.2pt;
+      font-weight: 800;
+      color: #1e293b;
+      border-top: 1px solid #334155;
+      padding-top: 1px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* CONTROLS PANEL */
+    .controls-panel {
+      background: #ffffff;
+      width: 100%;
+      max-width: 780px;
+      border-radius: 14px;
+      padding: 22px 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .panel-section-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .field-group label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .field-group input {
+      padding: 8px 10px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 7px;
+      font-size: 0.85rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(11, 61, 145, 0.12);
+    }
+
+    .photo-sliders {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      background: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 16px;
+    }
+
+    .slider-item {
+      flex: 1;
+      min-width: 140px;
+      display: flex;
+      flex-direction: column;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .action-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 11px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+    }
+
+    .btn-print {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-download {
+      background: #15803d;
+      color: #ffffff;
+    }
+
+    .btn-reset {
+      background: #475569;
+      color: #ffffff;
+    }
+
+    /* SAVED GALLERY */
+    .gallery-section {
+      width: 100%;
+      max-width: 780px;
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    .gallery-section h3 {
+      font-size: 1rem;
+      color: #334155;
+      margin-bottom: 12px;
+    }
+
+    .gallery-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    .gallery-grid img {
+      width: 220px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ============================================================
+       PRECISION PRINT STYLESHEET — ZERO CLIPPING ON CR-80 CARDS
+       ============================================================ */
+    @page {
+      size: auto;
+      margin: 10mm;
+    }
+
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+      }
+
+      .studio-header,
+      .controls-panel,
+      .gallery-section {
+        display: none !important;
+      }
+
+      .preview-stage {
+        margin: 0 !important;
+        padding: 0 !important;
+        perspective: none !important;
+        display: block !important;
+      }
+
+      /* Exact physical CR-80 dimensions with proportional zoom so zero text cuts off */
+      .id-card {
+        width: 428px !important;
+        height: 270px !important;
+        zoom: 0.755;
+        transform: none !important;
+        box-shadow: none !important;
+        margin: 0 auto !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="studio-header">
+    <h2>PM SHRI JNV ID Card Studio Pro</h2>
+    <p>Print-Calibrated CR-80 Smart Student Identity Card Generator</p>
+  </div>
+
+  <!-- LIVE CARD PREVIEW -->
+  <div class="preview-stage">
+    <div id="idCard" class="id-card">
+      <div class="security-strip"></div>
+
+      <!-- Subtle NVS Watermark in Background -->
+      <img
+        class="card-watermark"
+        src="https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Jawahar_Navodaya_Vidyalaya_logo.png/250px-Jawahar_Navodaya_Vidyalaya_logo.png"
+        alt="NVS Watermark"
+        crossorigin="anonymous"
+      />
+
+      <div class="card-layer">
+        <!-- Main Header -->
+        <div class="card-header">
+          <div class="header-logo">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Jawahar_Navodaya_Vidyalaya_logo.png/250px-Jawahar_Navodaya_Vidyalaya_logo.png"
+              alt="JNV Logo"
+              crossorigin="anonymous"
+            />
+          </div>
+          <div class="header-center">
+            <h1>PM SHRI JAWAHAR NAVODAYA VIDYALAYA</h1>
+            <div class="ministry-sub">Ministry of Education, Govt. of India</div>
+          </div>
+          <div class="batch-pill">
+            <span>Session</span>
+            <strong id="dispBatch">2026-27</strong>
+          </div>
+        </div>
+
+        <!-- Unified Common Section for Taluka, District, State & Region -->
+        <div class="common-location-bar" id="dispCommonLocation">
+          TALUKA: ANKLESHWAR • DIST: BHARUCH • STATE: GUJARAT • REGION: PUNE
+        </div>
+
+        <!-- Student Details & Portrait -->
+        <div class="card-body">
+          <div class="details-table">
+            <div class="detail-row">
+              <div class="detail-label">Student Name:</div>
+              <div class="detail-val" id="dispName">Deepu Kumar Rajak</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Father's Name:</div>
+              <div class="detail-val" id="dispFather">Rajendra Rajak</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Mother's Name:</div>
+              <div class="detail-val" id="dispMother">Sunita Devi</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Date of Birth:</div>
+              <div class="detail-val" id="dispDOB">2008-12-21</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">House / Class:</div>
+              <div class="detail-val" id="dispHouse">Aravalli (XII - Science)</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">GR / Adm No.:</div>
+              <div class="detail-val" id="dispGR">JNV-2026-104</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Contact No.:</div>
+              <div class="detail-val" id="dispMobile">+91 9876543210</div>
+            </div>
+          </div>
+
+          <div class="photo-box">
+            <img
+              id="studentPhoto"
+              src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='150' viewBox='0 0 120 150'><rect width='100%' height='100%' fill='%23dbeafe'/><circle cx='60' cy='52' r='24' fill='%2364748b'/><path d='M22,135 C22,95 98,95 98,135 Z' fill='%2364748b'/></svg>"
+              alt="Student Portrait"
+            />
+          </div>
+        </div>
+
+        <!-- Footer with QR Verification & Principal Signature -->
+        <div class="card-footer">
+          <div class="footer-left">
+            <div id="miniQr"></div>
+            <div class="id-meta">
+              ID: <strong id="dispCardCode">NVS-104</strong>
+              <span>Valid for Academic Session</span>
+            </div>
+          </div>
+
+          <div class="signature-area">
+            <div class="sign-script" id="dispSign">Deepu Kumar</div>
+            <div class="sign-title">Signature of Principal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDITOR CONTROLS -->
+  <div class="controls-panel">
+    <div class="panel-section-title">
+      <span>1. School Location & Session (Common Header Strip)</span>
+    </div>
+    <div class="form-grid">
+      <div class="field-group">
+        <label>Taluka</label>
+        <input type="text" id="inTaluka" value="Ankleshwar" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>District</label>
+        <input type="text" id="inDistrict" value="Bharuch" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>State</label>
+        <input type="text" id="inState" value="Gujarat" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Region</label>
+        <input type="text" id="inRegion" value="Pune" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Academic Batch / Session</label>
+        <input type="text" id="inBatch" value="2026-27" oninput="syncCard()" />
+      </div>
+    </div>
+
+    <div class="panel-section-title">
+      <span>2. Student Information & Principal Sign</span>
+    </div>
+    <div class="form-grid">
+      <div class="field-group">
+        <label>Student Name</label>
+        <input type="text" id="inName" value="Deepu Kumar Rajak" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Father's Name</label>
+        <input type="text" id="inFather" value="Rajendra Rajak" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Mother's Name</label>
+        <input type="text" id="inMother" value="Sunita Devi" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Date of Birth</label>
+        <input type="date" id="inDOB" value="2008-12-21" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>House / Class</label>
+        <input type="text" id="inHouse" value="Aravalli (XII - Science)" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>GR / Admission No.</label>
+        <input type="text" id="inGR" value="JNV-2026-104" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Mobile Number</label>
+        <input type="tel" id="inMobile" value="+91 9876543210" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Principal Signature Name</label>
+        <input type="text" id="inSign" value="Deepu Kumar" oninput="syncCard()" />
+      </div>
+      <div class="field-group">
+        <label>Upload Student Photo</label>
+        <input type="file" id="inPhoto" accept="image/*" />
+      </div>
+    </div>
+
+    <!-- Photo Alignment Sliders -->
+    <div class="photo-sliders">
+      <div class="slider-item">
+        <label>Photo Zoom: <span id="zoomVal">1.0x</span></label>
+        <input type="range" id="photoZoom" min="0.8" max="2.0" step="0.05" value="1.0" oninput="adjustPhoto()" />
+      </div>
+      <div class="slider-item">
+        <label>Horizontal Position (X)</label>
+        <input type="range" id="photoX" min="-30" max="30" step="1" value="0" oninput="adjustPhoto()" />
+      </div>
+      <div class="slider-item">
+        <label>Vertical Position (Y)</label>
+        <input type="range" id="photoY" min="-30" max="30" step="1" value="0" oninput="adjustPhoto()" />
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-print" onclick="printCleanCard()">🖨️ Print ID Card (No Cut-Off)</button>
+      <button class="btn btn-download" onclick="exportCardPNG()">💾 Download High-Res PNG</button>
+    </div>
+  </div>
+
+  <!-- EXPORT GALLERY -->
+  <div class="gallery-section">
+    <h3>Saved ID Cards Preview</h3>
+    <div class="gallery-grid" id="galleryGrid"></div>
+  </div>
+
+  <script>
+    let qrInstance = null;
+
+    function syncCard() {
+      const taluka = document.getElementById("inTaluka").value.trim() || "—";
+      const district = document.getElementById("inDistrict").value.trim() || "—";
+      const state = document.getElementById("inState").value.trim() || "—";
+      const region = document.getElementById("inRegion").value.trim() || "—";
+
+      document.getElementById("dispCommonLocation").innerText =
+        `TALUKA: ${taluka} • DIST: ${district} • STATE: ${state} • REGION: ${region}`;
+
+      const name = document.getElementById("inName").value.trim() || "Student Name";
+      const gr = document.getElementById("inGR").value.trim() || "000";
+      const batch = document.getElementById("inBatch").value.trim() || "2026-27";
+
+      document.getElementById("dispBatch").innerText = batch;
+      document.getElementById("dispName").innerText = name;
+      document.getElementById("dispFather").innerText = document.getElementById("inFather").value.trim() || "—";
+      document.getElementById("dispMother").innerText = document.getElementById("inMother").value.trim() || "—";
+      document.getElementById("dispDOB").innerText = document.getElementById("inDOB").value || "—";
+      document.getElementById("dispHouse").innerText = document.getElementById("inHouse").value.trim() || "—";
+      document.getElementById("dispGR").innerText = gr;
+      document.getElementById("dispMobile").innerText = document.getElementById("inMobile").value.trim() || "—";
+      document.getElementById("dispSign").innerText = document.getElementById("inSign").value.trim() || "Principal";
+      document.getElementById("dispCardCode").innerText = gr;
+
+      updateQR(`PM SHRI JNV | ${name} | GR: ${gr} | Dist: ${district} (${state})`);
+    }
+
+    function updateQR(text) {
+      const qrBox = document.getElementById("miniQr");
+      qrBox.innerHTML = "";
+      qrInstance = new QRCode(qrBox, {
+        text: text,
+        width: 64,
+        height: 64,
+        colorDark: "#06255c",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    document.getElementById("inPhoto").addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        document.getElementById("studentPhoto").src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function adjustPhoto() {
+      const z = document.getElementById("photoZoom").value;
+      const x = document.getElementById("photoX").value;
+      const y = document.getElementById("photoY").value;
+      document.getElementById("zoomVal").innerText = `${parseFloat(z).toFixed(2)}x`;
+      document.getElementById("studentPhoto").style.transform = `scale(${z}) translate(${x}px, ${y}px)`;
+    }
+
+    function printCleanCard() {
+      syncCard();
+      window.print();
+    }
+
+    function exportCardPNG() {
+      syncCard();
+      const card = document.getElementById("idCard");
+      html2canvas(card, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: null
+      }).then((canvas) => {
+        const dataUrl = canvas.toDataURL("image/png");
+        const img = document.createElement("img");
+        img.src = dataUrl;
+        document.getElementById("galleryGrid").prepend(img);
+
+        const a = document.createElement("a");
+        const cleanName = (document.getElementById("inName").value.trim() || "JNV_Student").replace(/\s+/g, "_");
+        a.download = `PM_SHRI_JNV_ID_${cleanName}.png`;
+        a.href = dataUrl;
+        a.click();
+      });
+    }
+
+    // Initialize on load
+    syncCard();
+  </script>
+</body>
+</html>

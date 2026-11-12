@@ -1,0 +1,485 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Explore India's IITs, NITs, IISERs, AIIMS, IIMs, NISER, IIITs and Central Universities. Search institutions by name, state and district.">
+<title>Indian Institutes Directory | Deepu Research Unify</title>
+<style>
+:root {
+  --green:#2e7d32; --blue:#1565c0; --orange:#ff9800;
+  --ink:#17243a; --muted:#66758b; --paper:#f4f7fb;
+  --white:#fff; --line:#e5eaf1;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+header{
+  position:relative;overflow:hidden;color:white;
+  padding:55px 20px 48px;text-align:center;
+  background:linear-gradient(120deg,#102b50,#1565c0 55%,#2e7d32);
+}
+header:before,header:after{
+  content:"";position:absolute;border:1px solid #ffffff25;
+  border-radius:50%;width:360px;height:360px;
+  animation:float 9s ease-in-out infinite;
+}
+header:before{top:-240px;left:-80px}
+header:after{bottom:-280px;right:-80px;animation-delay:2s}
+@keyframes float{50%{transform:translateY(25px) scale(1.08)}}
+.hero{position:relative;z-index:1;max-width:1000px;margin:auto}
+.brand{font-size:13px;letter-spacing:3px;font-weight:800;color:#bce6ff}
+h1{font-size:clamp(30px,5vw,54px);margin:15px 0 10px}
+.hero p{max-width:750px;margin:0 auto;color:#e2edff;line-height:1.7}
+.tagline{margin-top:17px;font-weight:700;color:#ffe0a6}
+main{max-width:1250px;margin:28px auto;padding:0 18px}
+.stats{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+ gap:13px;margin-bottom:25px
+}
+.stat{
+ background:white;border:1px solid var(--line);border-radius:15px;
+ padding:17px;text-align:center;box-shadow:0 5px 20px #18365b08;
+ transition:.25s
+}
+.stat:hover{transform:translateY(-5px);box-shadow:0 12px 25px #18365b15}
+.stat strong{display:block;font-size:27px;color:var(--blue)}
+.stat span{font-size:12px;color:var(--muted);font-weight:700}
+.toolbar{
+ background:white;border:1px solid var(--line);border-radius:18px;
+ padding:18px;margin-bottom:20px;box-shadow:0 5px 20px #18365b08
+}
+.search-row{display:flex;gap:10px;flex-wrap:wrap}
+input,select{
+ border:1px solid #d9e1ec;border-radius:10px;padding:13px 14px;
+ font-size:14px;background:white;color:var(--ink);outline:none
+}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1565c018}
+#search{flex:1;min-width:220px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+.filter{
+ border:1px solid #dce4ef;background:#f7f9fc;color:#34445b;
+ padding:9px 14px;border-radius:30px;font-weight:700;cursor:pointer;
+ transition:.2s
+}
+.filter:hover,.filter.active{background:var(--blue);color:white;border-color:var(--blue)}
+.results-bar{
+ display:flex;justify-content:space-between;gap:10px;align-items:center;
+ flex-wrap:wrap;margin:22px 2px 13px
+}
+.results-bar h2{font-size:20px;margin:0}
+#resultCount{font-size:13px;color:var(--muted)}
+.grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:16px
+}
+.card{
+ position:relative;background:white;border:1px solid var(--line);
+ border-radius:16px;padding:19px;overflow:hidden;
+ box-shadow:0 5px 18px #18365b08;
+ animation:appear .45s ease both;
+ transition:transform .25s,box-shadow .25s
+}
+.card:before{
+ content:"";position:absolute;left:0;top:0;width:4px;height:100%;
+ background:linear-gradient(var(--blue),var(--green))
+}
+.card:hover{transform:translateY(-5px);box-shadow:0 14px 28px #18365b16}
+@keyframes appear{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.category{
+ display:inline-block;background:#eaf2ff;color:#1555a0;
+ border-radius:20px;padding:5px 9px;font-size:10px;
+ font-weight:800;letter-spacing:.5px
+}
+.card h3{font-size:17px;line-height:1.4;margin:12px 0 13px}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.detail small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:800;letter-spacing:.6px}
+.detail span{font-size:13px;display:block;margin-top:4px;overflow-wrap:anywhere}
+.website{
+ display:inline-flex;margin-top:16px;font-size:13px;font-weight:800;
+ color:var(--blue)
+}
+.empty{
+ background:white;border:1px dashed #bdc9d9;border-radius:15px;
+ padding:35px;text-align:center;color:var(--muted);grid-column:1/-1
+}
+.note{
+ margin:24px 0;background:#fff8e9;border:1px solid #ffe0a3;
+ border-radius:13px;padding:15px;color:#77521a;font-size:13px;line-height:1.6
+}
+footer{
+ margin-top:50px;background:#10243d;color:#dce8f8;
+ text-align:center;padding:30px 18px;font-size:13px;line-height:1.8
+}
+footer a{color:#9ed0ff}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){
+ .grid{grid-template-columns:1fr}
+ header{padding:42px 17px}
+ .details{grid-template-columns:1fr 1fr}
+ .search-row>*{width:100%}
+}
+</style>
+</head>
+<body>
+<header>
+ <div class="hero">
+  <div class="brand">DEEPU RESEARCH UNIFY</div>
+  <h1>India's Premier Institutes Directory</h1>
+  <p>Explore India's leading institutions for technology, science, medicine, management and higher education. Search, filter and discover official institute websites.</p>
+  <div class="tagline">Research. Innovate. Sustain.</div>
+ </div>
+</header>
+
+<main>
+ <section class="stats" id="stats"></section>
+
+ <section class="toolbar">
+  <div class="search-row">
+   <input id="search" type="search" placeholder="Search institute, state, district or acronym..." aria-label="Search institutions">
+   <select id="stateFilter" aria-label="Filter by state">
+    <option value="">All States / UTs</option>
+   </select>
+   <select id="sort" aria-label="Sort institutions">
+    <option value="name">Sort: A to Z</option>
+    <option value="oldest">Oldest first</option>
+    <option value="newest">Newest first</option>
+   </select>
+  </div>
+  <div class="filters" id="filters"></div>
+ </section>
+
+ <div class="results-bar">
+  <h2 id="heading">All Institutions</h2>
+  <span id="resultCount"></span>
+ </div>
+ <section class="grid" id="directory" aria-live="polite"></section>
+
+ <div class="note">
+  <strong>Data and verification note:</strong>
+  Establishment year refers to the year recorded for the institution and may differ from the year it received its present status. District refers to the main campus location. Verify current campus addresses and official website links before relying on this directory for admissions or official correspondence.
+ </div>
+</main>
+
+<footer>
+ <strong>DEEPU RESEARCH UNIFY</strong><br>
+ Research. Innovate. Sustain.<br>
+ Directory for educational discovery and research awareness.<br>
+ Reference portals:
+ <a href="https://www.ugc.gov.in/" target="_blank" rel="noopener">UGC</a> ·
+ <a href="https://www.education.gov.in/" target="_blank" rel="noopener">Ministry of Education</a> ·
+ <a href="https://dashboard.aishe.gov.in/hedirectory" target="_blank" rel="noopener">AISHE Directory</a>
+</footer>
+
+<script>
+/*
+  DATA FORMAT:
+  ["Institute name", establishment year, "State / UT", "District",
+   "Official website", "Category"]
+
+  Add or update institute records in the array below.
+*/
+const institutions = [
+/* IIT – Indian Institutes of Technology */
+["IIT Bombay",1958,"Maharashtra","Mumbai Suburban","https://www.iitb.ac.in","IIT"],
+["IIT Delhi",1961,"Delhi","New Delhi","https://home.iitd.ac.in","IIT"],
+["IIT Kanpur",1959,"Uttar Pradesh","Kanpur Nagar","https://www.iitk.ac.in","IIT"],
+["IIT Kharagpur",1951,"West Bengal","Paschim Medinipur","https://www.iitkgp.ac.in","IIT"],
+["IIT Madras",1959,"Tamil Nadu","Chennai","https://www.iitm.ac.in","IIT"],
+["IIT Guwahati",1994,"Assam","Kamrup Metropolitan","https://www.iitg.ac.in","IIT"],
+["IIT Roorkee",1847,"Uttarakhand","Haridwar","https://www.iitr.ac.in","IIT"],
+["IIT (BHU) Varanasi",1919,"Uttar Pradesh","Varanasi","https://www.iitbhu.ac.in","IIT"],
+["IIT (ISM) Dhanbad",1926,"Jharkhand","Dhanbad","https://www.iitism.ac.in","IIT"],
+["IIT Bhubaneswar",2008,"Odisha","Khordha","https://www.iitbbs.ac.in","IIT"],
+["IIT Gandhinagar",2008,"Gujarat","Gandhinagar","https://iitgn.ac.in","IIT"],
+["IIT Hyderabad",2008,"Telangana","Sangareddy","https://iith.ac.in","IIT"],
+["IIT Jodhpur",2008,"Rajasthan","Jodhpur","https://iitj.ac.in","IIT"],
+["IIT Patna",2008,"Bihar","Patna","https://www.iitp.ac.in","IIT"],
+["IIT Ropar",2008,"Punjab","Rupnagar","https://www.iitrpr.ac.in","IIT"],
+["IIT Indore",2009,"Madhya Pradesh","Indore","https://www.iiti.ac.in","IIT"],
+["IIT Mandi",2009,"Himachal Pradesh","Mandi","https://www.iitmandi.ac.in","IIT"],
+["IIT Bhilai",2016,"Chhattisgarh","Durg","https://www.iitbhilai.ac.in","IIT"],
+["IIT Goa",2016,"Goa","North Goa","https://iitgoa.ac.in","IIT"],
+["IIT Jammu",2016,"Jammu and Kashmir","Jammu","https://www.iitjammu.ac.in","IIT"],
+["IIT Dharwad",2016,"Karnataka","Dharwad","https://www.iitdh.ac.in","IIT"],
+["IIT Palakkad",2015,"Kerala","Palakkad","https://iitpkd.ac.in","IIT"],
+["IIT Tirupati",2015,"Andhra Pradesh","Tirupati","https://www.iittp.ac.in","IIT"],
+
+/* NIT – National Institutes of Technology */
+["NIT Agartala",1965,"Tripura","West Tripura","https://www.nita.ac.in","NIT"],
+["NIT Andhra Pradesh",2015,"Andhra Pradesh","West Godavari","https://www.nitandhra.ac.in","NIT"],
+["NIT Arunachal Pradesh",2010,"Arunachal Pradesh","Papum Pare","https://www.nitap.ac.in","NIT"],
+["NIT Calicut",1961,"Kerala","Kozhikode","https://nitc.ac.in","NIT"],
+["NIT Delhi",2010,"Delhi","North West Delhi","https://nitdelhi.ac.in","NIT"],
+["NIT Durgapur",1960,"West Bengal","Paschim Bardhaman","https://nitdgp.ac.in","NIT"],
+["NIT Goa",2010,"Goa","South Goa","https://www.nitgoa.ac.in","NIT"],
+["NIT Hamirpur",1986,"Himachal Pradesh","Hamirpur","https://nith.ac.in","NIT"],
+["NIT Jalandhar",1987,"Punjab","Jalandhar","https://www.nitj.ac.in","NIT"],
+["NIT Jamshedpur",1960,"Jharkhand","East Singhbhum","https://www.nitjsr.ac.in","NIT"],
+["NIT Karnataka, Surathkal",1960,"Karnataka","Dakshina Kannada","https://www.nitk.ac.in","NIT"],
+["NIT Kurukshetra",1963,"Haryana","Kurukshetra","https://nitkkr.ac.in","NIT"],
+["NIT Manipur",2010,"Manipur","Imphal West","https://www.nitmanipur.ac.in","NIT"],
+["NIT Meghalaya",2010,"Meghalaya","East Khasi Hills","https://nitm.ac.in","NIT"],
+["NIT Mizoram",2010,"Mizoram","Aizawl","https://www.nitmz.ac.in","NIT"],
+["NIT Nagaland",2010,"Nagaland","Chumoukedima","https://nitnagaland.ac.in","NIT"],
+["NIT Patna",1886,"Bihar","Patna","https://www.nitp.ac.in","NIT"],
+["NIT Puducherry",2010,"Puducherry","Karaikal","https://nitpy.ac.in","NIT"],
+["NIT Raipur",1956,"Chhattisgarh","Raipur","https://www.nitrr.ac.in","NIT"],
+["NIT Rourkela",1961,"Odisha","Sundargarh","https://nitrkl.ac.in","NIT"],
+["NIT Sikkim",2010,"Sikkim","South Sikkim","https://nitsikkim.ac.in","NIT"],
+["NIT Silchar",1967,"Assam","Cachar","https://www.nits.ac.in","NIT"],
+["NIT Srinagar",1960,"Jammu and Kashmir","Srinagar","https://nitsri.ac.in","NIT"],
+["NIT Tiruchirappalli",1964,"Tamil Nadu","Tiruchirappalli","https://www.nitt.edu","NIT"],
+["NIT Uttarakhand",2010,"Uttarakhand","Pauri Garhwal","https://nituk.ac.in","NIT"],
+["NIT Warangal",1959,"Telangana","Hanamkonda","https://www.nitw.ac.in","NIT"],
+["MANIT Bhopal",1960,"Madhya Pradesh","Bhopal","https://www.manit.ac.in","NIT"],
+["MNIT Jaipur",1963,"Rajasthan","Jaipur","https://mnit.ac.in","NIT"],
+["MNNIT Allahabad",1961,"Uttar Pradesh","Prayagraj","https://www.mnnit.ac.in","NIT"],
+["VNIT Nagpur",1960,"Maharashtra","Nagpur","https://vnit.ac.in","NIT"],
+["SVNIT Surat",1961,"Gujarat","Surat","https://www.svnit.ac.in","NIT"],
+
+/* IISER – Indian Institutes of Science Education and Research */
+["IISER Berhampur",2016,"Odisha","Ganjam","https://www.iiserbpr.ac.in","IISER"],
+["IISER Bhopal",2008,"Madhya Pradesh","Bhopal","https://www.iiserb.ac.in","IISER"],
+["IISER Kolkata",2006,"West Bengal","Nadia","https://www.iiserkol.ac.in","IISER"],
+["IISER Mohali",2007,"Punjab","SAS Nagar","https://www.iisermohali.ac.in","IISER"],
+["IISER Pune",2006,"Maharashtra","Pune","https://www.iiserpune.ac.in","IISER"],
+["IISER Thiruvananthapuram",2008,"Kerala","Thiruvananthapuram","https://www.iisertvm.ac.in","IISER"],
+["IISER Tirupati",2015,"Andhra Pradesh","Tirupati","https://www.iisertirupati.ac.in","IISER"],
+
+/* AIIMS – All India Institutes of Medical Sciences */
+["AIIMS New Delhi",1956,"Delhi","New Delhi","https://www.aiims.edu","AIIMS"],
+["AIIMS Bhopal",2012,"Madhya Pradesh","Bhopal","https://aiimsbhopal.edu.in","AIIMS"],
+["AIIMS Bhubaneswar",2012,"Odisha","Khordha","https://aiimsbhubaneswar.nic.in","AIIMS"],
+["AIIMS Jodhpur",2012,"Rajasthan","Jodhpur","https://www.aiimsjodhpur.edu.in","AIIMS"],
+["AIIMS Patna",2012,"Bihar","Patna","https://aiimspatna.edu.in","AIIMS"],
+["AIIMS Raipur",2012,"Chhattisgarh","Raipur","https://www.aiimsraipur.edu.in","AIIMS"],
+["AIIMS Rishikesh",2012,"Uttarakhand","Dehradun","https://aiimsrishikesh.edu.in","AIIMS"],
+["AIIMS Rae Bareli",2013,"Uttar Pradesh","Rae Bareli","https://aiimsrbl.edu.in","AIIMS"],
+["AIIMS Mangalagiri",2018,"Andhra Pradesh","Guntur","https://www.aiimsmangalagiri.edu.in","AIIMS"],
+["AIIMS Nagpur",2018,"Maharashtra","Nagpur","https://aiimsnagpur.edu.in","AIIMS"],
+["AIIMS Gorakhpur",2019,"Uttar Pradesh","Gorakhpur","https://aiimsgorakhpur.edu.in","AIIMS"],
+["AIIMS Kalyani",2019,"West Bengal","Nadia","https://aiimskalyani.edu.in","AIIMS"],
+["AIIMS Bathinda",2019,"Punjab","Bathinda","https://aiimsbathinda.edu.in","AIIMS"],
+["AIIMS Deoghar",2019,"Jharkhand","Deoghar","https://www.aiimsdeoghar.edu.in","AIIMS"],
+["AIIMS Bibinagar",2019,"Telangana","Yadadri Bhuvanagiri","https://aiimsbibinagar.edu.in","AIIMS"],
+["AIIMS Guwahati",2017,"Assam","Kamrup Metropolitan","https://aiimsguwahati.ac.in","AIIMS"],
+["AIIMS Rajkot",2020,"Gujarat","Rajkot","https://aiimsrajkot.edu.in","AIIMS"],
+["AIIMS Vijaypur",2020,"Jammu and Kashmir","Samba","https://www.aiimsjammu.edu.in","AIIMS"],
+["AIIMS Bilaspur",2019,"Himachal Pradesh","Bilaspur","https://aiimsbilaspur.edu.in","AIIMS"],
+["AIIMS Madurai",2021,"Tamil Nadu","Madurai","https://aiimsmadurai.edu.in","AIIMS"],
+
+/* IIM – Indian Institutes of Management */
+["IIM Ahmedabad",1961,"Gujarat","Ahmedabad","https://www.iima.ac.in","IIM"],
+["IIM Bangalore",1973,"Karnataka","Bengaluru Urban","https://www.iimb.ac.in","IIM"],
+["IIM Calcutta",1961,"West Bengal","Kolkata","https://www.iimcal.ac.in","IIM"],
+["IIM Indore",1996,"Madhya Pradesh","Indore","https://iimidr.ac.in","IIM"],
+["IIM Kozhikode",1996,"Kerala","Kozhikode","https://iimk.ac.in","IIM"],
+["IIM Lucknow",1984,"Uttar Pradesh","Lucknow","https://www.iiml.ac.in","IIM"],
+["IIM Shillong",2007,"Meghalaya","East Khasi Hills","https://www.iimshillong.ac.in","IIM"],
+["IIM Rohtak",2010,"Haryana","Rohtak","https://www.iimrohtak.ac.in","IIM"],
+["IIM Ranchi",2010,"Jharkhand","Ranchi","https://iimranchi.ac.in","IIM"],
+["IIM Raipur",2010,"Chhattisgarh","Raipur","https://iimraipur.ac.in","IIM"],
+["IIM Tiruchirappalli",2011,"Tamil Nadu","Tiruchirappalli","https://www.iimtrichy.ac.in","IIM"],
+["IIM Kashipur",2011,"Uttarakhand","Udham Singh Nagar","https://www.iimkashipur.ac.in","IIM"],
+["IIM Udaipur",2011,"Rajasthan","Udaipur","https://www.iimu.ac.in","IIM"],
+["IIM Nagpur",2015,"Maharashtra","Nagpur","https://www.iimnagpur.ac.in","IIM"],
+["IIM Amritsar",2015,"Punjab","Amritsar","https://iimamritsar.ac.in","IIM"],
+["IIM Bodh Gaya",2015,"Bihar","Gaya","https://iimbg.ac.in","IIM"],
+["IIM Sambalpur",2015,"Odisha","Sambalpur","https://www.iimsambalpur.ac.in","IIM"],
+["IIM Sirmaur",2015,"Himachal Pradesh","Sirmaur","https://www.iimsirmaur.ac.in","IIM"],
+["IIM Visakhapatnam",2015,"Andhra Pradesh","Visakhapatnam","https://www.iimv.ac.in","IIM"],
+["IIM Jammu",2016,"Jammu and Kashmir","Jammu","https://www.iimj.ac.in","IIM"],
+["IIM Mumbai",1963,"Maharashtra","Mumbai Suburban","https://iimmumbai.ac.in","IIM"],
+
+/* NISER */
+["NISER Bhubaneswar",2006,"Odisha","Khordha","https://www.niser.ac.in","NISER"],
+
+/* IIIT – centrally funded and PPP mode */
+["IIIT Allahabad",1999,"Uttar Pradesh","Prayagraj","https://www.iiita.ac.in","IIIT"],
+["ABV-IIITM Gwalior",1997,"Madhya Pradesh","Gwalior","https://www.iiitm.ac.in","IIIT"],
+["PDPM-IIITDM Jabalpur",2005,"Madhya Pradesh","Jabalpur","https://www.iiitdmj.ac.in","IIIT"],
+["IIITDM Kancheepuram",2007,"Tamil Nadu","Chengalpattu","https://www.iiitdm.ac.in","IIIT"],
+["IIITDM Kurnool",2015,"Andhra Pradesh","Kurnool","https://iiitk.ac.in","IIIT"],
+["IIIT Sri City",2013,"Andhra Pradesh","Tirupati","https://www.iiits.ac.in","IIIT"],
+["IIIT Guwahati",2013,"Assam","Kamrup Metropolitan","https://www.iiitg.ac.in","IIIT"],
+["IIIT Vadodara",2013,"Gujarat","Gandhinagar","https://iiitvadodara.ac.in","IIIT"],
+["IIIT Sonepat",2014,"Haryana","Sonipat","https://iiitsonepat.ac.in","IIIT"],
+["IIIT Una",2014,"Himachal Pradesh","Una","https://www.iiitu.ac.in","IIIT"],
+["IIIT Dharwad",2015,"Karnataka","Dharwad","https://iiitdwd.ac.in","IIIT"],
+["IIIT Senapati",2015,"Manipur","Senapati","https://www.iiitmanipur.ac.in","IIIT"],
+["IIIT Kottayam",2015,"Kerala","Kottayam","https://www.iiitkottayam.ac.in","IIIT"],
+["IIIT Kota",2013,"Rajasthan","Kota","https://iiitkota.ac.in","IIIT"],
+["IIIT Tiruchirappalli",2013,"Tamil Nadu","Tiruchirappalli","https://www.iiitt.ac.in","IIIT"],
+["IIIT Lucknow",2015,"Uttar Pradesh","Lucknow","https://iiitl.ac.in","IIIT"],
+["IIIT Kalyani",2014,"West Bengal","Nadia","https://iiitkalyani.ac.in","IIIT"],
+["IIIT Pune",2016,"Maharashtra","Pune","https://www.iiitp.ac.in","IIIT"],
+["IIIT Ranchi",2016,"Jharkhand","Ranchi","https://iiitranchi.ac.in","IIIT"],
+["IIIT Nagpur",2016,"Maharashtra","Nagpur","https://iiitn.ac.in","IIIT"],
+["IIIT Bhopal",2017,"Madhya Pradesh","Bhopal","https://iiitbhopal.ac.in","IIIT"],
+["IIIT Surat",2017,"Gujarat","Surat","https://www.iiitsurat.ac.in","IIIT"],
+["IIIT Bhagalpur",2017,"Bihar","Bhagalpur","https://iiitbh.ac.in","IIIT"],
+["IIIT Agartala",2018,"Tripura","West Tripura","https://www.iiitnr.ac.in","IIIT"],
+["IIIT Raichur",2019,"Karnataka","Raichur","https://iiitr.ac.in","IIIT"],
+
+/* CU – Central Universities. UGC reports 57 operational Central Universities.
+   This initial dataset is a curated selection; add the remaining verified UGC entries. */
+["Aligarh Muslim University",1920,"Uttar Pradesh","Aligarh","https://www.amu.ac.in","CU"],
+["Assam University",1994,"Assam","Cachar","https://www.aus.ac.in","CU"],
+["Babasaheb Bhimrao Ambedkar University",1996,"Uttar Pradesh","Lucknow","https://www.bbau.ac.in","CU"],
+["Banaras Hindu University",1916,"Uttar Pradesh","Varanasi","https://www.bhu.ac.in","CU"],
+["Central Agricultural University",1993,"Manipur","Imphal West","https://www.cau.ac.in","CU"],
+["Central Sanskrit University",2020,"Delhi","New Delhi","https://www.sanskrit.nic.in","CU"],
+["Central Tribal University of Andhra Pradesh",2019,"Andhra Pradesh","Vizianagaram","https://www.ctuap.ac.in","CU"],
+["Central University of Andhra Pradesh",2018,"Andhra Pradesh","Anantapur","https://cuap.ac.in","CU"],
+["Central University of Gujarat",2009,"Gujarat","Gandhinagar","https://www.cug.ac.in","CU"],
+["Central University of Haryana",2009,"Haryana","Mahendragarh","https://www.cuh.ac.in","CU"],
+["Central University of Himachal Pradesh",2009,"Himachal Pradesh","Kangra","https://www.cuhimachal.ac.in","CU"],
+["Central University of Jammu",2011,"Jammu and Kashmir","Samba","https://www.cujammu.ac.in","CU"],
+["Central University of Jharkhand",2009,"Jharkhand","Ranchi","https://www.cuj.ac.in","CU"],
+["Central University of Karnataka",2009,"Karnataka","Kalaburagi","https://www.cuk.ac.in","CU"],
+["Central University of Kashmir",2009,"Jammu and Kashmir","Ganderbal","https://www.cukashmir.ac.in","CU"],
+["Central University of Kerala",2009,"Kerala","Kasaragod","https://www.cukerala.ac.in","CU"],
+["Central University of Odisha",2009,"Odisha","Koraput","https://cuo.ac.in","CU"],
+["Central University of Punjab",2009,"Punjab","Bathinda","https://cup.edu.in","CU"],
+["Central University of Rajasthan",2009,"Rajasthan","Ajmer","https://www.curaj.ac.in","CU"],
+["Central University of South Bihar",2009,"Bihar","Gaya","https://www.cusb.ac.in","CU"],
+["Central University of Tamil Nadu",2009,"Tamil Nadu","Thiruvarur","https://cutn.ac.in","CU"],
+["Dr. Harisingh Gour Vishwavidyalaya",1946,"Madhya Pradesh","Sagar","https://www.dhsgsu.edu.in","CU"],
+["Dr. Rajendra Prasad Central Agricultural University",2016,"Bihar","Samastipur","https://rpcau.ac.in","CU"],
+["English and Foreign Languages University",2007,"Telangana","Hyderabad","https://www.efluniversity.ac.in","CU"],
+["Guru Ghasidas Vishwavidyalaya",1983,"Chhattisgarh","Bilaspur","https://www.ggu.ac.in","CU"],
+["Hemvati Nandan Bahuguna Garhwal University",1973,"Uttarakhand","Pauri Garhwal","https://www.hnbgu.ac.in","CU"],
+["Indira Gandhi National Tribal University",2007,"Madhya Pradesh","Anuppur","https://www.igntu.ac.in","CU"],
+["Indira Gandhi National Open University",1985,"Delhi","New Delhi","https://www.ignou.ac.in","CU"],
+["Jamia Millia Islamia",1988,"Delhi","New Delhi","https://www.jmi.ac.in","CU"],
+["Jawaharlal Nehru University",1969,"Delhi","New Delhi","https://www.jnu.ac.in","CU"],
+["Mahatma Gandhi Antarrashtriya Hindi Vishwavidyalaya",1997,"Maharashtra","Wardha","https://www.hindivishwa.org","CU"],
+["Mahatma Gandhi Central University",2016,"Bihar","East Champaran","https://www.mgcub.ac.in","CU"],
+["Manipur University",1980,"Manipur","Imphal West","https://www.manipuruniv.ac.in","CU"],
+["Maulana Azad National Urdu University",1998,"Telangana","Hyderabad","https://manuu.edu.in","CU"],
+["Mizoram University",2000,"Mizoram","Aizawl","https://mzu.edu.in","CU"],
+["Nagaland University",1989,"Nagaland","Zunheboto","https://nagalanduniversity.ac.in","CU"],
+["Nalanda University",2010,"Bihar","Nalanda","https://nalandauniv.edu.in","CU"],
+["National Sanskrit University",2020,"Andhra Pradesh","Tirupati","https://nsktu.ac.in","CU"],
+["North-Eastern Hill University",1973,"Meghalaya","East Khasi Hills","https://www.nehu.ac.in","CU"],
+["Pondicherry University",1985,"Puducherry","Puducherry","https://www.pondiuni.edu.in","CU"],
+["Rajiv Gandhi University",2007,"Arunachal Pradesh","Papum Pare","https://rgu.ac.in","CU"],
+["Sikkim University",2007,"Sikkim","Gangtok","https://cus.ac.in","CU"],
+["Sindhu Central University",2021,"Ladakh","Leh","https://www.sindhuuniversity.ac.in","CU"],
+["South Asian University",2010,"Delhi","New Delhi","https://www.sau.int","CU"],
+["Tezpur University",1994,"Assam","Sonitpur","https://www.tezu.ernet.in","CU"],
+["Tripura University",2007,"Tripura","West Tripura","https://www.tripurauniv.ac.in","CU"],
+["University of Allahabad",1887,"Uttar Pradesh","Prayagraj","https://www.allduniv.ac.in","CU"],
+["University of Delhi",1922,"Delhi","New Delhi","https://www.du.ac.in","CU"],
+["University of Hyderabad",1974,"Telangana","Hyderabad","https://uohyd.ac.in","CU"],
+["Visva-Bharati",1921,"West Bengal","Birbhum","https://visvabharati.ac.in","CU"],
+["National Sports University",2018,"Manipur","Imphal West","https://www.nsu.ac.in","CU"],
+["Rani Lakshmi Bai Central Agricultural University",2014,"Uttar Pradesh","Jhansi","https://www.rlbcau.ac.in","CU"],
+["Sammakka Sarakka Central Tribal University",2023,"Telangana","Mulugu","https://www.sstcu.ac.in","CU"],
+["Shri Lal Bahadur Shastri National Sanskrit University",2020,"Delhi","New Delhi","https://www.slbsrsv.ac.in","CU"]
+];
+
+const categories = {
+ "ALL":"All Institutions",
+ "IIT":"Indian Institutes of Technology",
+ "NIT":"National Institutes of Technology",
+ "IISER":"Indian Institutes of Science Education and Research",
+ "AIIMS":"All India Institutes of Medical Sciences",
+ "IIM":"Indian Institutes of Management",
+ "NISER":"National Institute of Science Education and Research",
+ "IIIT":"Indian Institutes of Information Technology",
+ "CU":"Central Universities"
+};
+
+let activeCategory="ALL";
+const directory=document.getElementById("directory");
+const search=document.getElementById("search");
+const stateFilter=document.getElementById("stateFilter");
+const sort=document.getElementById("sort");
+
+function renderStats(){
+ const total=institutions.length;
+ document.getElementById("stats").innerHTML=
+ `<div class="stat"><strong>${total}</strong><span>LISTED RECORDS</span></div>`+
+ Object.keys(categories).filter(k=>k!=="ALL").map(k=>
+ `<div class="stat"><strong>${institutions.filter(x=>x[5]===k).length}</strong><span>${k} INSTITUTIONS</span></div>`
+ ).join("");
+}
+
+function renderFilters(){
+ document.getElementById("filters").innerHTML=
+ Object.entries(categories).map(([key,label])=>
+ `<button class="filter ${key===activeCategory?'active':''}" data-cat="${key}">${key==="ALL"?"All":key}</button>`
+ ).join("");
+ document.querySelectorAll(".filter").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+   activeCategory=btn.dataset.cat;
+   renderFilters();render();
+  });
+ });
+}
+
+function populateStates(){
+ const states=[...new Set(institutions.map(x=>x[2]))].sort();
+ stateFilter.innerHTML='<option value="">All States / UTs</option>'+
+ states.map(s=>`<option value="${s}">${s}</option>`).join("");
+}
+
+function safeText(value){
+ return String(value).replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+
+function render(){
+ const q=search.value.toLowerCase().trim();
+ const state=stateFilter.value;
+ let rows=institutions.filter(x=>{
+  const categoryMatch=activeCategory==="ALL"||x[5]===activeCategory;
+  const textMatch=x.slice(0,4).join(" ").toLowerCase().includes(q);
+  const stateMatch=!state||x[2]===state;
+  return categoryMatch&&textMatch&&stateMatch;
+ });
+ if(sort.value==="oldest")rows.sort((a,b)=>a[1]-b[1]);
+ else if(sort.value==="newest")rows.sort((a,b)=>b[1]-a[1]);
+ else rows.sort((a,b)=>a[0].localeCompare(b[0]));
+
+ document.getElementById("heading").textContent=categories[activeCategory];
+ document.getElementById("resultCount").textContent=`Showing ${rows.length} of ${institutions.length} listed records`;
+
+ if(!rows.length){
+  directory.innerHTML='<div class="empty">No matching institutes found. Try another search or category.</div>';
+  return;
+ }
+ directory.innerHTML=rows.map((x,i)=>`
+  <article class="card" style="animation-delay:${Math.min(i%12,10)*35}ms">
+   <span class="category">${safeText(x[5])}</span>
+   <h3>${safeText(x[0])}</h3>
+   <div class="details">
+    <div class="detail"><small>Establishment year</small><span>${safeText(x[1])}</span></div>
+    <div class="detail"><small>State / UT</small><span>${safeText(x[2])}</span></div>
+    <div class="detail"><small>District</small><span>${safeText(x[3])}</span></div>
+    <div class="detail"><small>Category</small><span>${safeText(x[5])}</span></div>
+   </div>
+   <a class="website" href="${safeText(x[4])}" target="_blank" rel="noopener noreferrer">Official Website ↗</a>
+  </article>
+ `).join("");
+}
+
+search.addEventListener("input",render);
+stateFilter.addEventListener("change",render);
+sort.addEventListener("change",render);
+renderStats();
+populateStates();
+renderFilters();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PM SHRI JNV ID Card Studio Pro — Enterprise Identity Generator</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- html2canvas for 300 DPI High-Res Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <!-- QRCode.js for Dynamic Verification QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Great+Vibes&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            signature: ['Alex Brush', 'Great Vibes', 'cursive']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS & THEME ENGINE
+       ========================================================================== */
+    :root {
+      --card-primary: #0f294a;
+      --card-secondary: #1e40af;
+      --card-accent: #0284c7;
+      --card-value: #b91c1c;
+      --card-strip-bg: rgba(15, 41, 74, 0.08);
+      --card-bg-start: #ffffff;
+      --card-bg-mid: #f0f7ff;
+      --card-bg-end: #e0f2fe;
+      --guilloche-stroke: rgba(30, 64, 175, 0.09);
+      --badge-bg: linear-gradient(135deg, #0f294a 0%, #1e40af 100%);
+      --holo-tint: rgba(56, 189, 248, 0.25);
+    }
+
+    [data-theme="emerald"] {
+      --card-primary: #064e3b;
+      --card-secondary: #047857;
+      --card-accent: #0d9488;
+      --card-value: #991b1b;
+      --card-strip-bg: rgba(6, 78, 59, 0.08);
+      --card-bg-start: #ffffff;
+      --card-bg-mid: #ecfdf5;
+      --card-bg-end: #d1fae5;
+      --guilloche-stroke: rgba(4, 120, 87, 0.09);
+      --badge-bg: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+      --holo-tint: rgba(52, 211, 153, 0.25);
+    }
+
+    [data-theme="maroon"] {
+      --card-primary: #500724;
+      --card-secondary: #881337;
+      --card-accent: #be123c;
+      --card-value: #1e3a8a;
+      --card-strip-bg: rgba(136, 19, 55, 0.08);
+      --card-bg-start: #ffffff;
+      --card-bg-mid: #fff1f2;
+      --card-bg-end: #ffe4e6;
+      --guilloche-stroke: rgba(136, 19, 55, 0.09);
+      --badge-bg: linear-gradient(135deg, #500724 0%, #9f1239 100%);
+      --holo-tint: rgba(251, 113, 133, 0.25);
+    }
+
+    [data-theme="gold"] {
+      --card-primary: #451a03;
+      --card-secondary: #92400e;
+      --card-accent: #b45309;
+      --card-value: #064e3b;
+      --card-strip-bg: rgba(146, 64, 14, 0.09);
+      --card-bg-start: #ffffff;
+      --card-bg-mid: #fffbeb;
+      --card-bg-end: #fef3c7;
+      --guilloche-stroke: rgba(180, 83, 9, 0.1);
+      --badge-bg: linear-gradient(135deg, #78350f 0%, #b45309 100%);
+      --holo-tint: rgba(251, 191, 36, 0.3);
+    }
+
+    /* ==========================================================================
+       CR-80 PRECISION DIMENSIONS (428px x 270px = Exact 1.586:1 ISO/IEC 7810)
+       ========================================================================== */
+    .cr80-card {
+      width: 428px;
+      height: 270px;
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--card-bg-start) 0%, var(--card-bg-mid) 55%, var(--card-bg-end) 100%);
+      border: 2px solid var(--card-primary);
+      box-shadow: 0 25px 50px -12px rgba(2, 6, 23, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+      user-select: none;
+    }
+
+    @media (max-width: 480px) {
+      .cr80-scale-wrapper {
+        transform: scale(0.82);
+        transform-origin: center top;
+        height: 225px;
+      }
+    }
+
+    /* ==========================================================================
+       3D STAGE & FLIP MECHANICS
+       ========================================================================== */
+    .stage-perspective {
+      perspective: 1400px;
+    }
+
+    .card-3d-rig {
+      width: 428px;
+      height: 270px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.65s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .card-3d-rig.is-tilting {
+      transition: transform 0.08s ease-out;
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .card-face-back {
+      transform: rotateY(180deg);
+    }
+
+    /* ==========================================================================
+       HOLOGRAPHIC FOIL SHIMMER & SECURITY TEXTURES
+       ========================================================================== */
+    .holo-foil-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+      background: linear-gradient(
+        115deg,
+        transparent 20%,
+        rgba(255, 255, 255, 0.45) 38%,
+        var(--holo-tint) 45%,
+        rgba(255, 255, 255, 0.6) 50%,
+        transparent 68%
+      );
+      background-size: 250% 250%;
+      background-position: var(--holo-x, 50%) var(--holo-y, 50%);
+      mix-blend-mode: overlay;
+      opacity: 0.65;
+      transition: opacity 0.3s ease;
+    }
+
+    .holo-seal {
+      background: conic-gradient(
+        from 45deg,
+        #38bdf8,
+        #818cf8,
+        #f472b6,
+        #fbbf24,
+        #34d399,
+        #38bdf8
+      );
+      opacity: 0.22;
+      mix-blend-mode: multiply;
+    }
+
+    /* Dynamic Theme Helper Classes */
+    .t-primary-text { color: var(--card-primary); }
+    .t-secondary-text { color: var(--card-secondary); }
+    .t-accent-text { color: var(--card-accent); }
+    .t-value-text { color: var(--card-value); }
+    .t-border-primary { border-color: var(--card-primary); }
+    .t-strip-bg { background-color: var(--card-strip-bg); }
+    .t-badge-bg { background: var(--badge-bg); }
+
+    /* Custom Range Sliders */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 5px;
+      border-radius: 999px;
+      background: #334155;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 15px;
+      width: 15px;
+      border-radius: 50%;
+      background: #38bdf8;
+      border: 2px solid #0f172a;
+      margin-top: -5px;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* ==========================================================================
+       PRINT STYLESHEET (CR-80 EXACT PHYSICAL DIMENSIONS)
+       ========================================================================== */
+    @media print {
+      body * { visibility: hidden !important; }
+      #printStage, #printStage * { visibility: visible !important; }
+      #printStage {
+        display: flex !important;
+        position: fixed;
+        inset: 0;
+        background: #ffffff !important;
+        align-items: center;
+        justify-content: center;
+        gap: 12mm;
+        padding: 10mm;
+      }
+      .print-card-clone {
+        width: 85.6mm !important;
+        height: 53.98mm !important;
+        box-shadow: none !important;
+        border: 1.5pt solid var(--card-primary) !important;
+        page-break-inside: avoid;
+      }
+      .holo-foil-overlay { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- TOP STUDIO HEADER -->
+  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-700 flex items-center justify-center shadow-lg shadow-sky-500/20 border border-sky-400/30">
+          <i class="fa-solid fa-id-card-clip text-white text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display font-extrabold text-base sm:text-lg tracking-tight text-white">JNV Identity Studio</h1>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-sky-500/15 text-sky-400 border border-sky-500/30">CR-80 PRO</span>
+          </div>
+          <p class="text-[11px] text-slate-400">PM SHRI Jawahar Navodaya Vidyalaya • Official Smart Card Generator</p>
+        </div>
+      </div>
+
+      <!-- Studio Quick Actions -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Theme Selector Pills -->
+        <div class="hidden md:flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl border border-slate-700/80">
+          <span class="text-[11px] font-semibold text-slate-400 mr-1">Card Theme:</span>
+          <button onclick="setCardTheme('navy')" id="theme-navy" class="w-5 h-5 rounded-full bg-blue-800 ring-2 ring-sky-400 ring-offset-2 ring-offset-slate-900 transition-all hover:scale-110" title="Classic Navy Blue"></button>
+          <button onclick="setCardTheme('emerald')" id="theme-emerald" class="w-5 h-5 rounded-full bg-emerald-700 opacity-75 hover:opacity-100 transition-all hover:scale-110" title="Emerald Teal"></button>
+          <button onclick="setCardTheme('maroon')" id="theme-maroon" class="w-5 h-5 rounded-full bg-rose-900 opacity-75 hover:opacity-100 transition-all hover:scale-110" title="Royal Maroon"></button>
+          <button onclick="setCardTheme('gold')" id="theme-gold" class="w-5 h-5 rounded-full bg-amber-600 opacity-75 hover:opacity-100 transition-all hover:scale-110" title="Sovereign Gold"></button>
+        </div>
+
+        <button onclick="loadSampleData()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5" title="Load Realistic Sample Data">
+          <i class="fa-solid fa-wand-magic-sparkles text-sky-400"></i>
+          <span class="hidden sm:inline">Sample</span>
+        </button>
+
+        <button onclick="clearFormData()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/60 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-800/60 text-xs font-semibold transition flex items-center gap-1.5" title="Clear All Fields">
+          <i class="fa-solid fa-eraser"></i>
+          <span class="hidden sm:inline">Clear</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN SPLIT-SCREEN STUDIO WORKSPACE -->
+  <main class="flex-grow max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+    <!-- ========================================================================
+         LEFT PANEL: INTERACTIVE 3D STUDIO STAGE & EXPORT SUITE (5 Columns)
+         ======================================================================== -->
+    <div class="lg:col-span-5 lg:sticky lg:top-20 flex flex-col gap-5">
+      
+      <!-- 3D Interactive Stage Box -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col items-center">
+        <!-- Ambient Radial Backdrop -->
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(56,189,248,0.12),transparent_70%)] pointer-events-none"></div>
+
+        <!-- Stage Top Toolbar -->
+        <div class="w-full flex items-center justify-between mb-5 relative z-10">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Live 3D CR-80 Stage</span>
+          </div>
+
+          <!-- Front / Back Segmented Switch -->
+          <div class="inline-flex bg-slate-950 p-1 rounded-lg border border-slate-800">
+            <button onclick="setCardSide('front')" id="btnSideFront" class="px-3 py-1 rounded-md text-xs font-bold bg-sky-600 text-white shadow transition">
+              Front Side
+            </button>
+            <button onclick="setCardSide('back')" id="btnSideBack" class="px-3 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              Back Side
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile Theme Switcher -->
+        <div class="flex md:hidden items-center gap-3 mb-4 relative z-10 bg-slate-950/80 px-3 py-1.5 rounded-full border border-slate-800">
+          <span class="text-[11px] text-slate-400">Theme:</span>
+          <button onclick="setCardTheme('navy')" class="w-4 h-4 rounded-full bg-blue-700 ring-1 ring-white"></button>
+          <button onclick="setCardTheme('emerald')" class="w-4 h-4 rounded-full bg-emerald-600"></button>
+          <button onclick="setCardTheme('maroon')" class="w-4 h-4 rounded-full bg-rose-800"></button>
+          <button onclick="setCardTheme('gold')" class="w-4 h-4 rounded-full bg-amber-600"></button>
+        </div>
+
+        <!-- 3D CARD VIEWPORT -->
+        <div class="cr80-scale-wrapper flex items-center justify-center my-2 relative z-10">
+          <div id="tiltStage" class="stage-perspective cursor-grab active:cursor-grabbing">
+            <div id="card3DRig" class="card-3d-rig">
+
+              <!-- ==============================================================
+                   FRONT CARD FACE (428px x 270px Precision Layout)
+                   ============================================================== -->
+              <div id="cardFrontFace" class="card-face cr80-card flex flex-col justify-between p-3 text-slate-900">
+                
+                <!-- 1. SVG Security Guilloche Background Pattern -->
+                <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <pattern id="guillochePattern" width="48" height="48" patternUnits="userSpaceOnUse">
+                      <path d="M0 24 Q 12 6, 24 24 T 48 24" fill="none" stroke="var(--guilloche-stroke)" stroke-width="0.9"/>
+                      <path d="M0 24 Q 12 42, 24 24 T 48 24" fill="none" stroke="var(--guilloche-stroke)" stroke-width="0.9"/>
+                      <circle cx="24" cy="24" r="16" fill="none" stroke="var(--guilloche-stroke)" stroke-width="0.6" stroke-dasharray="2,2"/>
+                      <circle cx="0" cy="0" r="10" fill="none" stroke="var(--guilloche-stroke)" stroke-width="0.5"/>
+                      <circle cx="48" cy="48" r="10" fill="none" stroke="var(--guilloche-stroke)" stroke-width="0.5"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#guillochePattern)"/>
+                  <!-- Center Watermark Crest Emblem -->
+                  <g transform="translate(214, 145)" opacity="0.055">
+                    <circle r="68" fill="none" stroke="var(--card-primary)" stroke-width="3"/>
+                    <circle r="58" fill="none" stroke="var(--card-primary)" stroke-width="1" stroke-dasharray="4,3"/>
+                    <polygon points="0,-48 12,-14 48,-14 19,8 29,42 0,21 -29,42 -19,8 -48,-14 -12,-14" fill="var(--card-primary)"/>
+                  </g>
+                </svg>
+
+                <!-- 2. Holographic Shimmer Foil Overlay -->
+                <div class="holo-foil-overlay" id="holoFront"></div>
+
+                <!-- 3. Top Institutional Header -->
+                <div class="relative z-10 flex items-center justify-between gap-2 pb-1.5 border-b-[1.5px] t-border-primary">
+                  <!-- Left: Official JNV Logo + Fallback Vector Emblem -->
+                  <div class="w-10 h-10 flex-shrink-0 rounded-lg bg-white/90 p-0.5 shadow-sm border border-slate-200/80 flex items-center justify-center relative">
+                    <img id="jnvOfficialLogo" 
+                         src="https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Jawahar_Navodaya_Vidyalaya_logo.png/250px-Jawahar_Navodaya_Vidyalaya_logo.png" 
+                         alt="JNV Emblem" 
+                         crossorigin="anonymous"
+                         onerror="this.style.display='none'; document.getElementById('jnvFallbackSvg').classList.remove('hidden');"
+                         class="w-full h-full object-contain">
+                    <!-- Fallback Vector Emblem -->
+                    <svg id="jnvFallbackSvg" class="hidden w-8 h-8" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="32" cy="32" r="29" fill="#0f294a" stroke="#f59e0b" stroke-width="2.5"/>
+                      <path d="M18 38 L32 16 L46 38 Z" fill="#ffffff"/>
+                      <circle cx="32" cy="33" r="5" fill="#f59e0b"/>
+                      <path d="M16 44 Q32 52 48 44" stroke="#38bdf8" stroke-width="3" fill="none" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+
+                  <!-- Center: School Name & Ministry Subtitle -->
+                  <div class="flex-1 text-center min-w-0">
+                    <h2 class="font-display font-extrabold text-[11.5px] leading-[1.15] tracking-tight t-primary-text uppercase">
+                      PM SHRI JAWAHAR NAVODAYA VIDYALAYA
+                    </h2>
+                    <p class="text-[7.5px] font-semibold text-slate-600 tracking-tight mt-0.5 truncate">
+                      An Autonomous Organization under Ministry of Education, Govt. of India
+                    </p>
+                  </div>
+
+                  <!-- Right: Session / Batch Pill Badge -->
+                  <div class="flex-shrink-0 flex flex-col items-end">
+                    <span class="text-[6.5px] font-bold uppercase tracking-wider text-slate-500 leading-none mb-0.5">Session</span>
+                    <span id="cardBatch" class="t-badge-bg text-white font-mono font-bold text-[9.5px] px-2 py-0.5 rounded-md shadow-sm tracking-tight">
+                      2026-27
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 4. Sub-Header Location Strip -->
+                <div class="relative z-10 t-strip-bg border-y border-slate-300/60 py-0.5 px-2 my-1 rounded flex items-center justify-center">
+                  <p id="cardLocationLine" class="text-[8px] font-extrabold t-secondary-text uppercase tracking-wide truncate text-center">
+                    TALUKA: BARDOLI &bull; DIST: SURAT &bull; STATE: GUJARAT (PUNE REGION)
+                  </p>
+                </div>
+
+                <!-- 5. Main Body Split Grid -->
+                <div class="relative z-10 flex-1 grid grid-cols-12 gap-2.5 items-stretch pt-0.5 min-h-0">
+                  
+                  <!-- Left Column (8 Cols): Structured Key-Value Fields -->
+                  <div class="col-span-8 flex flex-col justify-between py-0.5 pr-1">
+                    
+                    <div class="grid grid-cols-[76px_1fr] items-baseline gap-1 border-b border-slate-200/70 pb-[2px]">
+                      <span class="text-[8.5px] font-bold text-slate-700">Student Name</span>
+                      <span id="cardName" class="text-[9.5px] font-extrabold t-value-text uppercase truncate">: AARAV SHARMA</span>
+                    </div>
+
+                    <div class="grid grid-cols-[76px_1fr] items-baseline gap-1 border-b border-slate-200/70 pb-[2px]">
+                      <span class="text-[8.5px] font-bold text-slate-700">Father's Name</span>
+                      <span id="cardFather" class="text-[9px] font-bold text-slate-900 capitalize truncate">: Rajesh Kumar Sharma</span>
+                    </div>
+
+                    <div class="grid grid-cols-[76px_1fr] items-baseline gap-1 border-b border-slate-200/70 pb-[2px]">
+                      <span class="text-[8.5px] font-bold text-slate-700">Mother's Name</span>
+                      <span id="cardMother" class="text-[9px] font-bold text-slate-900 capitalize truncate">: Sunita Sharma</span>
+                    </div>
+
+                    <div class="grid grid-cols-[76px_1fr] items-baseline gap-1 border-b border-slate-200/70 pb-[2px]">
+                      <span class="text-[8.5px] font-bold text-slate-700">Date of Birth</span>
+                      <span id="cardDob" class="text-[9px] font-mono font-bold text-slate-900 truncate">: 14-08-2011</span>
+                    </div>
+
+                    <div class="grid grid-cols-[76px_1fr] items-center gap-1 border-b border-slate-200/70 pb-[2px]">
+                      <span class="text-[8.5px] font-bold text-slate-700">House</span>
+                      <div class="flex items-center gap-1.5 min-w-0">
+                        <span class="text-[9px] font-bold text-slate-900">:</span>
+                        <span id="houseDot" class="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0 ring-1 ring-black/10"></span>
+                        <span id="cardHouse" class="text-[9px] font-extrabold text-slate-900 uppercase truncate">Aravalli</span>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-[76px_1fr] items-baseline gap-1 border-b border-slate-200/70 pb-[2px]">
+                      <span class="text-[8.5px] font-bold text-slate-700">GR Number</span>
+                      <span id="cardGr" class="text-[9px] font-mono font-extrabold t-primary-text truncate">: JNV-2026-0842</span>
+                    </div>
+
+                    <div class="grid grid-cols-[76px_1fr] items-baseline gap-1">
+                      <span class="text-[8.5px] font-bold text-slate-700">Mobile No.</span>
+                      <span id="cardMobile" class="text-[9px] font-mono font-bold text-slate-900 truncate">: +91 98250 44192</span>
+                    </div>
+
+                  </div>
+
+                  <!-- Right Column (4 Cols): Portrait Frame & Principal Signature Zone -->
+                  <div class="col-span-4 flex flex-col items-center justify-between pl-1">
+                    
+                    <!-- Precision 3:4 Portrait Frame with Double Ring -->
+                    <div class="relative p-[2px] rounded-lg border-[1.5px] t-border-primary bg-white shadow-sm">
+                      <div class="w-[74px] h-[94px] rounded-[5px] overflow-hidden bg-slate-200 relative">
+                        <img id="cardPhotoImg" 
+                             src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 150'><rect width='120' height='150' fill='%23e2e8f0'/><circle cx='60' cy='52' r='26' fill='%2394a3b8'/><path d='M18 142 C18 98 102 98 102 142 Z' fill='%2394a3b8'/></svg>" 
+                             alt="Student Portrait" 
+                             class="w-full h-full object-cover origin-center transition-transform duration-75">
+                      </div>
+                      <!-- Mini Holographic Security Seal Badge on Corner of Photo -->
+                      <div class="holo-seal w-5 h-5 rounded-full absolute -bottom-1.5 -left-1.5 border border-white/80 shadow-sm pointer-events-none"></div>
+                    </div>
+
+                    <!-- Collision-Free Signature & Stamp Footer Zone -->
+                    <div class="w-full flex flex-col items-center mt-1 relative">
+                      <!-- Official Circular School Stamp Graphic -->
+                      <svg class="w-9 h-9 absolute -top-2.5 left-0 opacity-30 pointer-events-none t-primary-text" viewBox="0 0 60 60">
+                        <circle cx="30" cy="30" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <circle cx="30" cy="30" r="21" fill="none" stroke="currentColor" stroke-width="0.8" stroke-dasharray="2,2"/>
+                        <text x="30" y="28" text-anchor="middle" font-size="5.5" font-weight="bold" fill="currentColor">PM SHRI</text>
+                        <text x="30" y="35" text-anchor="middle" font-size="5" font-weight="bold" fill="currentColor">JNV SEAL</text>
+                      </svg>
+
+                      <!-- Cursive Signature -->
+                      <div id="cardSigText" class="font-signature text-[17px] leading-none text-slate-900 tracking-wide relative z-10 h-4 flex items-center justify-center">
+                        Dr. R. K. Verma
+                      </div>
+                      <div class="w-full border-t border-slate-700 mt-0.5 pt-[1px] text-center">
+                        <span class="block text-[7.5px] font-extrabold uppercase tracking-wider t-primary-text leading-none">
+                          Principal
+                        </span>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- ==============================================================
+                   BACK CARD FACE (428px x 270px Precision Layout)
+                   ============================================================== -->
+              <div id="cardBackFace" class="card-face card-face-back cr80-card flex flex-col justify-between p-3 text-slate-900">
+                
+                <!-- Subtle Guilloche Pattern -->
+                <svg class="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-60" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="100%" height="100%" fill="url(#guillochePattern)"/>
+                </svg>
+
+                <div class="holo-foil-overlay" id="holoBack"></div>
+
+                <!-- Top Header Strip -->
+                <div class="relative z-10 t-badge-bg text-white px-3 py-1.5 rounded-lg flex items-center justify-between shadow-sm">
+                  <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved text-xs text-amber-300"></i>
+                    <span class="font-display font-extrabold text-[9.5px] tracking-wider uppercase">
+                      STUDENT IDENTITY & EMERGENCY CARD
+                    </span>
+                  </div>
+                  <span id="backGrBadge" class="font-mono text-[8px] bg-white/20 px-1.5 py-0.5 rounded font-bold">
+                    JNV-2026-0842
+                  </span>
+                </div>
+
+                <!-- Center Content: Rules + Dynamic QR Code -->
+                <div class="relative z-10 grid grid-cols-12 gap-3 items-center my-auto py-1">
+                  
+                  <!-- Left: Emergency & Residential Details + Instructions -->
+                  <div class="col-span-8 flex flex-col justify-between space-y-1.5">
+                    
+                    <!-- Emergency Info Box -->
+                    <div class="bg-white/85 border border-slate-300/80 rounded-lg p-2 space-y-1 shadow-xs">
+                      <div class="flex items-center justify-between text-[8.5px]">
+                        <span class="font-bold text-slate-600">Blood Group: <strong id="backBlood" class="text-red-700 font-extrabold">B+</strong></span>
+                        <span class="font-bold text-slate-600">Emergency: <strong id="backEmergency" class="font-mono text-slate-900">+91 98250 44192</strong></span>
+                      </div>
+                      <div class="text-[8px] leading-snug text-slate-700">
+                        <span class="font-bold text-slate-800">Residential Address:</span>
+                        <span id="backAddress">12, Shanti Nagar Society, Station Road, Bardoli, Dist. Surat, Gujarat - 394601</span>
+                      </div>
+                    </div>
+
+                    <!-- Standard JNV Policy Rules -->
+                    <div class="text-[7.5px] text-slate-700 leading-[1.35] space-y-0.5 pl-0.5">
+                      <p class="font-bold t-primary-text uppercase text-[7.5px] tracking-wide">Important Instructions:</p>
+                      <p>&bull; Carrying this smart identity card inside the Vidyalaya campus is mandatory.</p>
+                      <p>&bull; This card is non-transferable. Loss must be reported immediately to the Principal.</p>
+                      <p>&bull; If found, please return to <strong>PM SHRI Jawahar Navodaya Vidyalaya</strong>.</p>
+                    </div>
+                  </div>
+
+                  <!-- Right: Live Dynamic QR Code Box -->
+                  <div class="col-span-4 flex flex-col items-center justify-center bg-white p-2 rounded-xl border-[1.5px] t-border-primary shadow-sm">
+                    <div id="qrCodeBox" class="w-[82px] h-[82px] flex items-center justify-center overflow-hidden"></div>
+                    <span class="text-[6.5px] font-mono font-bold uppercase tracking-wider text-slate-500 mt-1">Scan to Verify</span>
+                  </div>
+
+                </div>
+
+                <!-- Bottom Barcode Strip -->
+                <div class="relative z-10 border-t border-slate-300/80 pt-1 flex items-center justify-between">
+                  <div class="flex flex-col">
+                    <span class="text-[7px] font-bold text-slate-500 uppercase">Navodaya Vidyalaya Samiti</span>
+                    <span class="text-[7.5px] font-extrabold t-primary-text">Ministry of Education, Govt. of India</span>
+                  </div>
+
+                  <!-- Crisp Vector Barcode Graphic + GR Text -->
+                  <div class="flex flex-col items-end">
+                    <svg id="barcodeSvg" class="h-5 w-32" viewBox="0 0 160 24" xmlns="http://www.w3.org/2000/svg">
+                      <g fill="#0f172a">
+                        <rect x="2" y="0" width="2" height="24"/><rect x="6" y="0" width="1" height="24"/>
+                        <rect x="10" y="0" width="3" height="24"/><rect x="16" y="0" width="1" height="24"/>
+                        <rect x="20" y="0" width="2" height="24"/><rect x="25" y="0" width="4" height="24"/>
+                        <rect x="32" y="0" width="1" height="24"/><rect x="36" y="0" width="2" height="24"/>
+                        <rect x="41" y="0" width="1" height="24"/><rect x="45" y="0" width="3" height="24"/>
+                        <rect x="51" y="0" width="2" height="24"/><rect x="56" y="0" width="1" height="24"/>
+                        <rect x="60" y="0" width="3" height="24"/><rect x="66" y="0" width="2" height="24"/>
+                        <rect x="71" y="0" width="1" height="24"/><rect x="75" y="0" width="4" height="24"/>
+                        <rect x="82" y="0" width="1" height="24"/><rect x="86" y="0" width="2" height="24"/>
+                        <rect x="91" y="0" width="3" height="24"/><rect x="97" y="0" width="1" height="24"/>
+                        <rect x="101" y="0" width="2" height="24"/><rect x="106" y="0" width="1" height="24"/>
+                        <rect x="110" y="0" width="3" height="24"/><rect x="116" y="0" width="2" height="24"/>
+                        <rect x="121" y="0" width="1" height="24"/><rect x="125" y="0" width="3" height="24"/>
+                        <rect x="131" y="0" width="2" height="24"/><rect x="136" y="0" width="1" height="24"/>
+                        <rect x="140" y="0" width="4" height="24"/><rect x="147" y="0" width="1" height="24"/>
+                        <rect x="151" y="0" width="2" height="24"/><rect x="156" y="0" width="2" height="24"/>
+                      </g>
+                    </svg>
+                    <span id="backBarcodeLabel" class="font-mono text-[7px] font-bold tracking-[0.2em] text-slate-700 leading-none mt-0.5">
+                      *JNV-2026-0842*
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <p class="text-[11px] text-slate-500 mt-3 flex items-center gap-1.5 relative z-10">
+          <i class="fa-solid fa-computer-mouse text-sky-400"></i> Hover over card for 3D holographic tilt &bull; Click buttons above to flip
+        </p>
+      </div>
+
+      <!-- EXPORT & PRINT ACTION DECK -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">300 DPI Export & Production</span>
+          <span class="text-[11px] font-mono text-emerald-400">Scale 3x Crisp PNG</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <button onclick="exportHighResPNG('front')" class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-sky-600/20 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-download"></i> Download Front PNG
+          </button>
+          <button onclick="exportHighResPNG('back')" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-download"></i> Download Back PNG
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <button onclick="saveCardToGallery()" class="py-2.5 px-3 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/15 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-folder-plus"></i> Save to Gallery
+          </button>
+          <button onclick="printDualCards()" class="py-2.5 px-3 rounded-xl bg-amber-600/90 hover:bg-amber-500 text-white font-bold text-xs shadow-lg shadow-amber-600/15 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-print"></i> Print Front & Back
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================================================
+         RIGHT PANEL: ENTERPRISE DATA & PHOTO CALIBRATION CONTROLS (7 Columns)
+         ======================================================================== -->
+    <div class="lg:col-span-7 space-y-6">
+      
+      <!-- Control Panel Card -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-6">
+        
+        <!-- 1. Student Identity Section -->
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-4">
+            <h3 class="font-display font-bold text-sm text-white flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center text-xs"><i class="fa-solid fa-user-graduate"></i></span>
+              Student Personal & Academic Details
+            </h3>
+            <span class="text-[11px] text-slate-500">Auto-syncing</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Full Student Name</label>
+              <input type="text" id="inpName" value="Aarav Sharma" oninput="syncCardData()" placeholder="e.g. Aarav Sharma"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 outline-none transition">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">GR / Admission Number</label>
+              <input type="text" id="inpGr" value="JNV-2026-0842" oninput="syncCardData()" placeholder="e.g. JNV-2026-0842"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3.5 py-2 text-sm font-mono text-white placeholder-slate-500 outline-none transition">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Father's Name</label>
+              <input type="text" id="inpFather" value="Rajesh Kumar Sharma" oninput="syncCardData()" placeholder="Father's full name"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 outline-none transition">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Mother's Name</label>
+              <input type="text" id="inpMother" value="Sunita Sharma" oninput="syncCardData()" placeholder="Mother's full name"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 outline-none transition">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Date of Birth</label>
+              <input type="date" id="inpDob" value="2011-08-14" onchange="syncCardData()"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3.5 py-2 text-sm font-mono text-white outline-none transition">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Navodaya House</label>
+              <select id="inpHouse" onchange="syncCardData()"
+                      class="w-full bg-slate-950 border border-slate-700/90 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3.5 py-2 text-sm text-white outline-none transition">
+                <option value="Aravalli">Aravalli (Blue House)</option>
+                <option value="Nilgiri">Nilgiri (Green House)</option>
+                <option value="Shivalik">Shivalik (Red House)</option>
+                <option value="Udaigiri">Udaigiri (Yellow House)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Parent Mobile Number</label>
+              <input type="tel" id="inpMobile" value="+91 98250 44192" oninput="syncCardData()" placeholder="+91 XXXXX XXXXX"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3.5 py-2 text-sm font-mono text-white placeholder-slate-500 outline-none transition">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Batch / Session</label>
+                <input type="text" id="inpBatch" value="2026-27" oninput="syncCardData()" placeholder="2026-27"
+                       class="w-full bg-slate-950 border border-slate-700/90 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3 py-2 text-sm font-mono text-white outline-none transition">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Blood Group</label>
+                <select id="inpBlood" onchange="syncCardData()"
+                        class="w-full bg-slate-950 border border-slate-700/90 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-3 py-2 text-sm font-bold text-white outline-none transition">
+                  <option value="B+">B+</option>
+                  <option value="O+">O+</option>
+                  <option value="A+">A+</option>
+                  <option value="AB+">AB+</option>
+                  <option value="O-">O-</option>
+                  <option value="A-">A-</option>
+                  <option value="B-">B-</option>
+                  <option value="AB-">AB-</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Vidyalaya Jurisdiction & Back Card Address -->
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-4">
+            <h3 class="font-display font-bold text-sm text-white flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-xs"><i class="fa-solid fa-landmark"></i></span>
+              Vidyalaya Jurisdiction & Residential Address
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Taluka / Block</label>
+              <input type="text" id="inpTaluka" value="Bardoli" oninput="syncCardData()"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-white outline-none transition">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">District</label>
+              <input type="text" id="inpDistrict" value="Surat" oninput="syncCardData()"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-white outline-none transition">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">State</label>
+              <input type="text" id="inpState" value="Gujarat" oninput="syncCardData()"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-white outline-none transition">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">NVS Region</label>
+              <input type="text" id="inpRegion" value="Pune Region" oninput="syncCardData()"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-white outline-none transition">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Permanent Residential Address (Back Card)</label>
+              <input type="text" id="inpAddress" value="12, Shanti Nagar Society, Station Road, Bardoli, Dist. Surat, Gujarat - 394601" oninput="syncCardData()"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-white outline-none transition">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Principal Name (Signature)</label>
+              <input type="text" id="inpPrincipal" value="Dr. R. K. Verma" oninput="syncCardData()"
+                     class="w-full bg-slate-950 border border-slate-700/90 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-white outline-none transition">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Portrait Photo Upload & Optical Calibration -->
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-4">
+            <h3 class="font-display font-bold text-sm text-white flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-purple-500/15 text-purple-400 flex items-center justify-center text-xs"><i class="fa-solid fa-crop-simple"></i></span>
+              Portrait Photo Upload & Precision Calibration
+            </h3>
+            <button onclick="resetPhotoCalibration()" class="text-[11px] font-semibold text-sky-400 hover:text-sky-300 transition flex items-center gap-1">
+              <i class="fa-solid fa-rotate-left"></i> Reset Alignment
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+            <!-- Upload Trigger -->
+            <div class="sm:col-span-5">
+              <label for="inpPhotoUpload" class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-slate-700 hover:border-sky-500 rounded-xl cursor-pointer bg-slate-900/60 hover:bg-slate-900 transition p-3 text-center group">
+                <i class="fa-solid fa-cloud-arrow-up text-xl text-slate-400 group-hover:text-sky-400 mb-1.5 transition"></i>
+                <span class="text-xs font-bold text-slate-200">Upload Student Photo</span>
+                <span class="text-[10px] text-slate-500 mt-0.5">JPG, PNG, WEBP (3:4 Ratio)</span>
+                <input id="inpPhotoUpload" type="file" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+              </label>
+            </div>
+
+            <!-- Zoom & Pan Sliders -->
+            <div class="sm:col-span-7 space-y-3">
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-slate-400 font-medium">Optical Zoom</span>
+                  <span id="lblZoom" class="font-mono text-sky-400 font-bold">100%</span>
+                </div>
+                <input type="range" id="rngZoom" min="1" max="2" step="0.02" value="1" oninput="applyPhotoTransform()" class="w-full">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-slate-400 font-medium">Horizontal Pan (X)</span>
+                  <span id="lblPanX" class="font-mono text-sky-400 font-bold">0px</span>
+                </div>
+                <input type="range" id="rngPanX" min="-35" max="35" step="1" value="0" oninput="applyPhotoTransform()" class="w-full">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-slate-400 font-medium">Vertical Pan (Y)</span>
+                  <span id="lblPanY" class="font-mono text-sky-400 font-bold">0px</span>
+                </div>
+                <input type="range" id="rngPanY" min="-35" max="35" step="1" value="0" oninput="applyPhotoTransform()" class="w-full">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SAVED ID CARDS GALLERY -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-display font-bold text-sm text-white flex items-center gap-2">
+            <i class="fa-solid fa-layer-group text-amber-400"></i> Saved Session Cards Gallery
+          </h3>
+          <span id="galleryCountBadge" class="text-[11px] font-mono bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full border border-slate-700">0 Cards</span>
+        </div>
+
+        <div id="savedGalleryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div id="galleryEmptyState" class="col-span-full py-8 border border-dashed border-slate-800 rounded-xl flex flex-col items-center justify-center text-slate-500">
+            <i class="fa-regular fa-id-card text-2xl mb-2 opacity-50"></i>
+            <p class="text-xs font-medium">No cards saved in this session yet.</p>
+            <p class="text-[11px] text-slate-600 mt-0.5">Click "Save to Gallery" to archive generated student IDs.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- HIDDEN PRINT STAGE -->
+  <div id="printStage" class="hidden"></div>
+
+  <!-- ==========================================================================
+       APPLICATION ENGINE & INTERACTIVITY SCRIPT
+       ========================================================================== -->
+  <script>
+    let qrInstance = null;
+    let currentSide = 'front';
+    let savedCardsCount = 0;
+
+    // House color mappings
+    const houseColors = {
+      'Aravalli': '#2563eb', // Blue
+      'Nilgiri': '#16a34a',  // Green
+      'Shivalik': '#dc2626', // Red
+      'Udaigiri': '#eab308'  // Yellow
+    };
+
+    // Initialize Application
+    window.addEventListener('DOMContentLoaded', () => {
+      initQRCode();
+      syncCardData();
+      init3DTiltPhysics();
+    });
+
+    // Toast Feedback Helper (Zero alert() usage)
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      const icons = {
+        success: '<i class="fa-solid fa-circle-check text-emerald-400"></i>',
+        info: '<i class="fa-solid fa-circle-info text-sky-400"></i>',
+        warning: '<i class="fa-solid fa-triangle-exclamation text-amber-400"></i>'
+      };
+
+      toast.className = 'pointer-events-auto flex items-center gap-2.5 bg-slate-900/95 backdrop-blur-md text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl border border-slate-700/80 transform translate-y-2 opacity-0 transition-all duration-300';
+      toast.innerHTML = `${icons[type] || icons.info}<span>${message}</span>`;
+      
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 2800);
+    }
+
+    // Theme Switcher
+    function setCardTheme(themeName) {
+      if (themeName === 'navy') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', themeName);
+      }
+
+      // Update active ring indicator on desktop buttons
+      ['navy', 'emerald', 'maroon', 'gold'].forEach(t => {
+        const btn = document.getElementById(`theme-${t}`);
+        if (!btn) return;
+        if (t === themeName) {
+          btn.classList.add('ring-2', 'ring-sky-400', 'ring-offset-2', 'ring-offset-slate-900', 'opacity-100');
+          btn.classList.remove('opacity-75');
+        } else {
+          btn.classList.remove('ring-2', 'ring-sky-400', 'ring-offset-2', 'ring-offset-slate-900', 'opacity-100');
+          btn.classList.add('opacity-75');
+        }
+      });
+    }
+
+    // Dual-Sided Card Flip Controller
+    function setCardSide(side) {
+      const rig = document.getElementById('card3DRig');
+      const btnFront = document.getElementById('btnSideFront');
+      const btnBack = document.getElementById('btnSideBack');
+
+      currentSide = side;
+      if (side === 'back') {
+        rig.style.transform = 'rotateY(180deg)';
+        btnBack.className = 'px-3 py-1 rounded-md text-xs font-bold bg-sky-600 text-white shadow transition';
+        btnFront.className = 'px-3 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-white transition';
+      } else {
+        rig.style.transform = 'rotateY(0deg)';
+        btnFront.className = 'px-3 py-1 rounded-md text-xs font-bold bg-sky-600 text-white shadow transition';
+        btnBack.className = 'px-3 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-white transition';
+      }
+    }
+
+    // 3D Interactive Stage Tilt & Holographic Foil Tracking
+    function init3DTiltPhysics() {
+      const stage = document.getElementById('tiltStage');
+      const rig = document.getElementById('card3DRig');
+      const holoFront = document.getElementById('holoFront');
+      const holoBack = document.getElementById('holoBack');
+
+      stage.addEventListener('mouseenter', () => {
+        rig.classList.add('is-tilting');
+      });
+
+      stage.addEventListener('mousemove', (e) => {
+        const rect = stage.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const rotateX = ((y - centerY) / centerY) * -12;
+        const rotateY = ((x - centerX) / centerX) * 14;
+
+        const baseY = currentSide === 'back' ? 180 : 0;
+        rig.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${(baseY + rotateY).toFixed(2)}deg)`;
+
+        // Update holographic foil gradient coordinates
+        const holoX = ((x / rect.width) * 100).toFixed(1) + '%';
+        const holoY = ((y / rect.height) * 100).toFixed(1) + '%';
+        holoFront.style.setProperty('--holo-x', holoX);
+        holoFront.style.setProperty('--holo-y', holoY);
+        holoBack.style.setProperty('--holo-x', holoX);
+        holoBack.style.setProperty('--holo-y', holoY);
+      });
+
+      stage.addEventListener('mouseleave', () => {
+        rig.classList.remove('is-tilting');
+        const baseY = currentSide === 'back' ? 180 : 0;
+        rig.style.transform = `rotateX(0deg) rotateY(${baseY}deg)`;
+      });
+    }
+
+    // Format YYYY-MM-DD to DD-MM-YYYY
+    function formatDisplayDate(isoDate) {
+      if (!isoDate) return '—';
+      const parts = isoDate.split('-');
+      if (parts.length !== 3) return isoDate;
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+
+    // Live Real-Time Data Binding
+    function syncCardData() {
+      const name = document.getElementById('inpName').value.trim() || 'STUDENT NAME';
+      const father = document.getElementById('inpFather').value.trim() || '—';
+      const mother = document.getElementById('inpMother').value.trim() || '—';
+      const dobRaw = document.getElementById('inpDob').value;
+      const house = document.getElementById('inpHouse').value || 'Aravalli';
+      const gr = document.getElementById('inpGr').value.trim() || 'JNV-0000';
+      const mobile = document.getElementById('inpMobile').value.trim() || '—';
+      const batch = document.getElementById('inpBatch').value.trim() || '2026-27';
+      const blood = document.getElementById('inpBlood').value || 'O+';
+
+      const taluka = document.getElementById('inpTaluka').value.trim() || '—';
+      const district = document.getElementById('inpDistrict').value.trim() || '—';
+      const state = document.getElementById('inpState').value.trim() || '—';
+      const region = document.getElementById('inpRegion').value.trim() || '—';
+      const address = document.getElementById('inpAddress').value.trim() || '—';
+      const principal = document.getElementById('inpPrincipal').value.trim() || 'Principal';
+
+      // Front Card DOM updates
+      document.getElementById('cardName').textContent = `: ${name}`;
+      document.getElementById('cardFather').textContent = `: ${father}`;
+      document.getElementById('cardMother').textContent = `: ${mother}`;
+      document.getElementById('cardDob').textContent = `: ${formatDisplayDate(dobRaw)}`;
+      document.getElementById('cardHouse').textContent = house;
+      document.getElementById('houseDot').style.backgroundColor = houseColors[house] || '#2563eb';
+      document.getElementById('cardGr').textContent = `: ${gr}`;
+      document.getElementById('cardMobile').textContent = `: ${mobile}`;
+      document.getElementById('cardBatch').textContent = batch;
+      document.getElementById('cardSigText').textContent = principal;
+
+      document.getElementById('cardLocationLine').textContent = 
+        `TALUKA: ${taluka.toUpperCase()} • DIST: ${district.toUpperCase()} • STATE: ${state.toUpperCase()} (${region.toUpperCase()})`;
+
+      // Back Card DOM updates
+      document.getElementById('backGrBadge').textContent = gr;
+      document.getElementById('backBlood').textContent = blood;
+      document.getElementById('backEmergency').textContent = mobile;
+      document.getElementById('backAddress').textContent = address;
+      document.getElementById('backBarcodeLabel').textContent = `*${gr.toUpperCase()}*`;
+
+      // Update Verification QR Code Payload
+      const qrPayload = `PM SHRI JNV ID\nName: ${name}\nGR: ${gr}\nBatch: ${batch}\nHouse: ${house}\nEmergency: ${mobile}`;
+      updateQRCode(qrPayload);
+    }
+
+    // Initialize QR Code Engine
+    function initQRCode() {
+      const box = document.getElementById('qrCodeBox');
+      box.innerHTML = '';
+      qrInstance = new QRCode(box, {
+        text: 'PM SHRI JNV VERIFIED',
+        width: 78,
+        height: 78,
+        colorDark: '#0f172a',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    function updateQRCode(payload) {
+      if (!qrInstance) return;
+      try {
+        qrInstance.clear();
+        qrInstance.makeCode(payload);
+      } catch (e) {
+        console.warn('QR refresh skipped:', e);
+      }
+    }
+
+    // Student Portrait Upload & Calibration
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('cardPhotoImg').src = e.target.result;
+        resetPhotoCalibration();
+        showToast('Portrait uploaded! Use sliders to fine-tune framing.', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function applyPhotoTransform() {
+      const zoom = parseFloat(document.getElementById('rngZoom').value);
+      const panX = parseInt(document.getElementById('rngPanX').value, 10);
+      const panY = parseInt(document.getElementById('rngPanY').value, 10);
+
+      document.getElementById('lblZoom').textContent = `${Math.round(zoom * 100)}%`;
+      document.getElementById('lblPanX').textContent = `${panX}px`;
+      document.getElementById('lblPanY').textContent = `${panY}px`;
+
+      const img = document.getElementById('cardPhotoImg');
+      img.style.transform = `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`;
+    }
+
+    function resetPhotoCalibration() {
+      document.getElementById('rngZoom').value = 1;
+      document.getElementById('rngPanX').value = 0;
+      document.getElementById('rngPanY').value = 0;
+      applyPhotoTransform();
+    }
+
+    // Load Sample Data / Clear Form
+    function loadSampleData() {
+      document.getElementById('inpName').value = 'Ananya Deshmukh';
+      document.getElementById('inpGr').value = 'JNV-2026-1109';
+      document.getElementById('inpFather').value = 'Vikramaditya Deshmukh';
+      document.getElementById('inpMother').value = 'Meera Deshmukh';
+      document.getElementById('inpDob').value = '2011-03-22';
+      document.getElementById('inpHouse').value = 'Nilgiri';
+      document.getElementById('inpMobile').value = '+91 98791 22048';
+      document.getElementById('inpBatch').value = '2026-27';
+      document.getElementById('inpBlood').value = 'O+';
+      document.getElementById('inpTaluka').value = 'Navsari';
+      document.getElementById('inpDistrict').value = 'Navsari';
+      document.getElementById('inpState').value = 'Gujarat';
+      document.getElementById('inpRegion').value = 'Pune Region';
+      document.getElementById('inpAddress').value = '402, Green Park Residency, Lunsikui Road, Navsari, Gujarat - 396445';
+      document.getElementById('inpPrincipal').value = 'Dr. R. K. Verma';
+      syncCardData();
+      showToast('Sample student profile loaded.', 'info');
+    }
+
+    function clearFormData() {
+      ['inpName', 'inpGr', 'inpFather', 'inpMother', 'inpMobile', 'inpTaluka', 'inpDistrict', 'inpState', 'inpRegion', 'inpAddress'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('inpDob').value = '';
+      syncCardData();
+      showToast('All fields cleared.', 'warning');
+    }
+
+    // Clean Offscreen Clone Renderer for Flawless 300 DPI PNG Capture
+    async function renderCardToCanvas(side = 'front', scale = 3) {
+      const sourceEl = side === 'front' ? document.getElementById('cardFrontFace') : document.getElementById('cardBackFace');
+      
+      // Clone node into a flat, unrotated staging wrapper so 3D transforms never distort html2canvas
+      const staging = document.createElement('div');
+      staging.style.position = 'fixed';
+      staging.style.left = '-9999px';
+      staging.style.top = '0';
+      staging.style.zIndex = '-1';
+
+      const clone = sourceEl.cloneNode(true);
+      clone.style.position = 'relative';
+      clone.style.transform = 'none';
+      clone.style.backfaceVisibility = 'visible';
+      
+      // Remove holographic foil overlay during export for razor-sharp print clarity
+      const holo = clone.querySelector('.holo-foil-overlay');
+      if (holo) holo.remove();
+
+      // If back side, copy rendered QR canvas/img accurately
+      if (side === 'back') {
+        const origCanvas = document.querySelector('#qrCodeBox canvas');
+        const origImg = document.querySelector('#qrCodeBox img');
+        const cloneQrBox = clone.querySelector('#qrCodeBox');
+        cloneQrBox.innerHTML = '';
+        const qrSnapshot = document.createElement('img');
+        qrSnapshot.style.width = '78px';
+        qrSnapshot.style.height = '78px';
+        if (origCanvas) {
+          qrSnapshot.src = origCanvas.toDataURL('image/png');
+        } else if (origImg && origImg.src) {
+          qrSnapshot.src = origImg.src;
+        }
+        cloneQrBox.appendChild(qrSnapshot);
+      }
+
+      staging.appendChild(clone);
+      document.body.appendChild(staging);
+
+      try {
+        const canvas = await html2canvas(clone, {
+          scale: scale,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          logging: false
+        });
+        document.body.removeChild(staging);
+        return canvas;
+      } catch (err) {
+        document.body.removeChild(staging);
+        throw err;
+      }
+    }
+
+    // Export 300 DPI PNG
+    async function exportHighResPNG(side) {
+      showToast(`Rendering 300 DPI ${side.toUpperCase()} PNG...`, 'info');
+      try {
+        const canvas = await renderCardToCanvas(side, 3);
+        const studentName = (document.getElementById('inpName').value.trim() || 'Student').replace(/\s+/g, '_');
+        const link = document.createElement('a');
+        link.download = `JNV_ID_${studentName}_${side.toUpperCase()}_300DPI.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+        showToast(`${side.toUpperCase()} ID Card exported successfully!`, 'success');
+      } catch (error) {
+        console.error(error);
+        showToast('Export encountered an issue. Please try again.', 'warning');
+      }
+    }
+
+    // Save Card Pair to Session Gallery
+    async function saveCardToGallery() {
+      showToast('Archiving card to session gallery...', 'info');
+      try {
+        const frontCanvas = await renderCardToCanvas('front', 2);
+        const backCanvas = await renderCardToCanvas('back', 2);
+
+        const frontDataUrl = frontCanvas.toDataURL('image/png');
+        const backDataUrl = backCanvas.toDataURL('image/png');
+
+        const studentName = document.getElementById('inpName').value.trim() || 'Unnamed Student';
+        const grNo = document.getElementById('inpGr').value.trim() || 'N/A';
+
+        const emptyState = document.getElementById('galleryEmptyState');
+        if (emptyState) emptyState.remove();
+
+        savedCardsCount++;
+        document.getElementById('galleryCountBadge').textContent = `${savedCardsCount} Card${savedCardsCount > 1 ? 's' : ''}`;
+
+        const grid = document.getElementById('savedGalleryGrid');
+        const item = document.createElement('div');
+        item.className = 'bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col gap-2.5 hover:border-slate-700 transition group';
+
+        item.innerHTML = `
+          <div class="relative rounded-lg overflow-hidden border border-slate-800">
+            <img src="${frontDataUrl}" alt="${studentName}" class="w-full h-auto block">
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-white truncate">${studentName}</p>
+              <p class="text-[10px] font-mono text-slate-400 truncate">${grNo}</p>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <a href="${frontDataUrl}" download="JNV_${studentName.replace(/\s+/g, '_')}_Front.png" 
+                 class="px-2 py-1 rounded bg-sky-500/15 hover:bg-sky-500/30 text-sky-400 text-[10px] font-bold transition" title="Download Front">
+                 Front
+              </a>
+              <a href="${backDataUrl}" download="JNV_${studentName.replace(/\s+/g, '_')}_Back.png" 
+                 class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition" title="Download Back">
+                 Back
+              </a>
+            </div>
+          </div>
+        `;
+
+        grid.prepend(item);
+        showToast(`Saved ${studentName}'s ID card to gallery!`, 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Could not save card to gallery.', 'warning');
+      }
+    }
+
+    // Print Ready Dual-Side Execution
+    async function printDualCards() {
+      showToast('Preparing CR-80 print sheet...', 'info');
+      try {
+        const frontCanvas = await renderCardToCanvas('front', 3);
+        const backCanvas = await renderCardToCanvas('back', 3);
+
+        const printStage = document.getElementById('printStage');
+        printStage.innerHTML = '';
+
+        const imgFront = document.createElement('img');
+        imgFront.src = frontCanvas.toDataURL('image/png');
+        imgFront.className = 'print-card-clone rounded-lg';
+
+        const imgBack = document.createElement('img');
+        imgBack.src = backCanvas.toDataURL('image/png');
+        imgBack.className = 'print-card-clone rounded-lg';
+
+        printStage.appendChild(imgFront);
+        printStage.appendChild(imgBack);
+
+        setTimeout(() => {
+          window.print();
+        }, 250);
+      } catch (err) {
+        console.error(err);
+        showToast('Print preparation failed.', 'warning');
+      }
+    }
+  </script>
+</body>
+</html>
